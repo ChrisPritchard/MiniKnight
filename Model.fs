@@ -1,37 +1,40 @@
 module Model
 
-type World = {
-    state: GameState
-    level: MapTile list
+type World = 
+    | Menu
+    | Playing of PlayingState
+    | GameOver of score:int
+and PlayingState = {
+    level: (int * int * MapTile) list
     coins: (int * int) list
     orcs: Orc list
     knight: Knight
 } 
-and GameState = | Title | Playing | GameOver
 and MapTile = | Block | Spikes | Orc | Coin | EntryPortal | ExitPortal | Knight
 and Orc = {
-    position: int * int
+    position: float * float
     state: EntityState
     direction: Direction
     health: int
 }
-and EntityState = | Walking | Jumping | Standing | Striking | Blocking | Hit | Dead
+and EntityState = 
+    | Standing | Walking | Jumping of velocity:float 
+    | Striking | Blocking | Hit of startTime:float | Dead
 and Direction = | Left | Right
 and Knight = {
-    position: int * int
+    position: float * float
     state: EntityState
     direction: Direction
     health: int
     score: int
 }
 
-let startWorld = { 
-    state = Playing
+let startWorld = Playing { 
     level = []
     coins = []
     orcs = []
     knight = {
-        position = 0,0
+        position = 0.,0.
         state = Standing
         direction = Right
         health = 3
