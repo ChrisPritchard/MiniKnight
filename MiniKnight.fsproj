@@ -9,6 +9,55 @@
     <Compile Include="GameCore.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
+
+  <!-- Stuff outside the content pipeline - loaded directly -->
+  <ItemGroup>
+    <None Include="Content\Content.mgcb" />
+    <None Include="Content\Maps\map1.bmp" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Maps\map2.bmp" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Maps\map3.bmp" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Maps\map4.bmp" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Maps\map5.bmp" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Coins\coin.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Coins\coin2.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Coins\coin3.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Knight\die.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Knight\hit1.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Knight\hit2.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Knight\hit3.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Knight\jump.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Knight\walk1.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Knight\walk2.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Orcs\die.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Orcs\hit1.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Orcs\hit2.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Portal.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Shared\block1.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Shared\block2.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Shared\block3.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Shared\swing.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Shared\swing2.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Shared\swing3.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sounds\Spikes.wav" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Music\Explorer_0.ogg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Music\menu.ogg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Music\victory.ogg" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+    
+  <!-- Processed by content pipeline on build into xnb files -->
+  <ItemGroup>
+    <None Include="Content\coders_crux.ttf" />
+    <None Include="Content\coders_crux.spritefont" />
+    <None Include="Content\Sprites\background.png" />
+    <None Include="Content\Sprites\goldCoinSm.png" />
+    <None Include="Content\Sprites\Knight.png" />
+    <None Include="Content\Sprites\Orc.png" />
+    <None Include="Content\Sprites\portal-arrive.png" />
+    <None Include="Content\Sprites\portal-depart.png" />
+    <None Include="Content\Sprites\spikes.png" />
+    <None Include="Content\Sprites\stoneFloor.png" />
+    <MonoGameContentReference Include="**\*.mgcb" />
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="MonoGame.Content.Builder" Version="3.7.0.4" />
