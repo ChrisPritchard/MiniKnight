@@ -7,12 +7,14 @@
 
   <ItemGroup>
     <Compile Include="GameCore.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="View.fs" />
+    <Compile Include="Controller.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <!-- Stuff outside the content pipeline - loaded directly -->
   <ItemGroup>
-    <None Include="Content\Content.mgcb" />
     <None Include="Content\Maps\map1.bmp" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Maps\map2.bmp" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Maps\map3.bmp" CopyToOutputDirectory="PreserveNewest" />
@@ -46,6 +48,7 @@
     
   <!-- Processed by content pipeline on build into xnb files -->
   <ItemGroup>
+    <None Include="Content\Content.mgcb" />
     <None Include="Content\coders_crux.ttf" />
     <None Include="Content\coders_crux.spritefont" />
     <None Include="Content\Sprites\background.png" />
