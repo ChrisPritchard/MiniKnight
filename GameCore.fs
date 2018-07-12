@@ -15,12 +15,6 @@ type Loadable =
 
 type Origin = | TopLeft | Centre
 
-type DrawImageInfo = {
-    assetKey: string
-    destRect: int * int * int * int
-    sourceRect: (int * int * int * int) option
-}
-
 type DrawTextInfo = {
     assetKey: string
     text: string
@@ -30,8 +24,8 @@ type DrawTextInfo = {
 }
 
 type ViewArtifact = 
-| Image of DrawImageInfo
-| ColouredImage of Color * DrawImageInfo
+| Image of assetKey:string * destRect: (int*int*int*int) * sourceRect: (int*int*int*int) option
+| ColouredImage of assetKey:string * destRect: (int*int*int*int) * sourceRect: (int*int*int*int) option * color:Color
 | MappedImage of assetKey:string * mapKey:string * destRect: (int*int*int*int)
 | Text of DrawTextInfo
 | ColouredText of Color * DrawTextInfo
@@ -105,18 +99,18 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
     let asRectangle (x,y,width,height) = 
         new Rectangle (x,y,width,height)
     
-    let drawImage (spriteBatch: SpriteBatch) image colour = 
+    let drawImage (spriteBatch: SpriteBatch) (assetKey, destRect, sourceRect) colour = 
         let sourceRect = 
-            match image.sourceRect with 
+            match sourceRect with 
             | None -> Unchecked.defaultof<Nullable<Rectangle>> 
             | Some r -> asRectangle r |> Nullable
         let texture =
-            match Map.tryFind image.assetKey assets with
+            match Map.tryFind assetKey assets with
             | Some (TextureAsset t) -> t
-            | None -> sprintf "Missing asset: %s" image.assetKey |> failwith
-            | _-> sprintf "Asset was not a Texture2D: %s" image.assetKey |> failwith
+            | None -> sprintf "Missing asset: %s" assetKey |> failwith
+            | _-> sprintf "Asset was not a Texture2D: %s" assetKey |> failwith
         spriteBatch.Draw(
-            texture, asRectangle image.destRect, 
+            texture, asRectangle destRect, 
             sourceRect, colour, 0.0f, Vector2.Zero, 
             SpriteEffects.None, 0.0f)
             
@@ -202,8 +196,8 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
         currentView
             |> List.iter (
                 function 
-                | Image i -> drawImage spriteBatch i Color.White
-                | ColouredImage (c,i) -> drawImage spriteBatch i c
+                | Image (a,d,s) -> drawImage spriteBatch (a,d,s) Color.White
+                | ColouredImage (a,d,s,c) -> drawImage spriteBatch (a,d,s) c
                 | MappedImage (a,m,d) -> drawMappedImage spriteBatch (a,m,d) Color.White
                 | Text t -> drawText spriteBatch t Color.Black
                 | ColouredText (c,t) -> drawText spriteBatch t c

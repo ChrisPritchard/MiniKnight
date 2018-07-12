@@ -19,7 +19,7 @@ let resolution = Windowed (screenWidth, screenHeight)
 
 let getPlayingView _ _ = 
     [
-        Image { assetKey = "background"; destRect = 0,0,screenWidth,screenHeight; sourceRect = None}
+        Image ("background", (0,0,screenWidth,screenHeight), None)
         MappedImage ("knight", "standright2", (screenWidth/2, screenHeight/2, 40, 40))
     ]
 
