@@ -152,7 +152,9 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
             assetsToLoad
             |> List.map (
                 function
-                | Texture info -> info.key, this.Content.Load<Texture2D>(info.path) |> TextureAsset
+                | Texture info -> 
+                    use stream = File.OpenRead(info.path)
+                    info.key, Texture2D.FromStream(this.GraphicsDevice, stream) |> TextureAsset
                 | Font info -> info.key, this.Content.Load<SpriteFont>(info.path) |> FontAsset
                 | Sound info -> 
                     use stream = File.OpenRead(info.path)
