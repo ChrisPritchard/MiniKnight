@@ -3,6 +3,8 @@ module View
 open GameCore
 open Model
 
+let animSpeed = 200.
+
 let assetsToLoad = [
     Texture ("background", "./Content/Sprites/background.png")
     TextureMap ("knight", "./Content/Sprites/knight.png", "./Content/Sprites/knight-key.csv")
@@ -19,8 +21,14 @@ let resolution = Windowed (screenWidth, screenHeight)
 
 let getKnightFrame (knight : Knight) elapsed = 
     let byDir leftFrame rightFrame = if knight.direction = Left then leftFrame else rightFrame
+    let gameFrame = elapsed / animSpeed
+    let frameFor max = gameFrame % float max |> int
+
     match knight.state with
     | Standing -> byDir "standleft1" "standright1"
+    | Walking -> 
+        let frame = (if knight.direction = Left then 6 else 15) + frameFor 4
+        sprintf "MiniKnight_%i" frame
     | Dead -> byDir "deadleft2" "deadright2"
     | _ -> "standright1"
 

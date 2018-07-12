@@ -19,7 +19,8 @@ and Orc = {
 }
 and EntityState = 
     | Standing | Walking | Jumping of velocity:float 
-    | Striking | Blocking | Hit of startTime:float | Dead
+    | Striking | Blocking | Hit of startTime:float
+    | Dying | Dead
 and Direction = | Left | Right
 and Knight = {
     position: float * float
@@ -36,7 +37,7 @@ let startWorld = Playing {
     knight = 
     {
         position = 0.,0.
-        state = Standing
+        state = Walking
         direction = Right
         health = 3
         score = 0
