@@ -4,22 +4,23 @@ open GameCore
 open Model
 
 let assetsToLoad = [
-    Texture { key = "background"; path = "./Content/Sprites/background.png" }
-    Texture { key = "knight"; path = "./Content/Sprites/knight.png" }
-    Texture { key = "orc"; path = "./Content/Sprites/orc.png" }
-    Texture { key = "stoneFloor"; path = "./Content/Sprites/stoneFloor.png" }
-    Texture { key = "goldCoin"; path = "./Content/Sprites/goldCoin.png" }
-    Texture { key = "spikes"; path = "./Content/Sprites/spikes.png" }
-    Texture { key = "portalArrive"; path = "./Content/Sprites/portalArrive.png" }
-    Texture { key = "portalDepart"; path = "./Content/Sprites/portalDepart.png" }
+    Texture ("background", "./Content/Sprites/background.png")
+    TextureMap ("knight", "./Content/Sprites/knight.png", "./Content/Sprites/knight-key.csv")
+    TextureMap ("orc", "./Content/Sprites/orc.png", "./Content/Sprites/orc-key.csv")
+    TextureMap ("stoneFloor", "./Content/Sprites/stoneFloor.png", "./Content/Sprites/stoneFloor-key.csv")
+    TextureMap ("goldCoin", "./Content/Sprites/goldCoin.png", "./Content/Sprites/goldCoin-key.csv")
+    Texture ("spikes", "./Content/Sprites/spikes.png")
+    TextureMap ("portalArrive", "./Content/Sprites/portalArrive.png", "./Content/Sprites/portalArrive-key.csv")
+    TextureMap ("portalDepart", "./Content/Sprites/portalDepart.png", "./Content/Sprites/portalDepart-key.csv")
 ]
 
 let screenWidth, screenHeight = 800, 600
 let resolution = Windowed (screenWidth, screenHeight)
 
-let getPlayingView runState gameState = 
+let getPlayingView _ _ = 
     [
         Image { assetKey = "background"; destRect = 0,0,screenWidth,screenHeight; sourceRect = None}
+        MappedImage ("knight", "standright2", (screenWidth/2, screenHeight/2, 40, 40))
     ]
 
 let getView runState model =

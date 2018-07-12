@@ -33,7 +33,8 @@ let startWorld = Playing {
     level = []
     coins = []
     orcs = []
-    knight = {
+    knight = 
+    {
         position = 0.,0.
         state = Standing
         direction = Right

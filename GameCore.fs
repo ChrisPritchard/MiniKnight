@@ -7,15 +7,11 @@ open Microsoft.Xna.Framework.Graphics;
 open Microsoft.Xna.Framework.Input;
 open Microsoft.Xna.Framework.Audio
 
-type KeyPath = {
-    key: string
-    path: string
-}
-
 type Loadable =
-| Texture of KeyPath
-| Font of KeyPath
-| Sound of KeyPath
+| Texture of key:string * path:string
+| TextureMap of key:string * texturePath:string * keyPath:string
+| Font of key:string * path:string
+| Sound of key:string * path:string
 
 type Origin = | TopLeft | Centre
 
@@ -36,6 +32,7 @@ type DrawTextInfo = {
 type ViewArtifact = 
 | Image of DrawImageInfo
 | ColouredImage of Color * DrawImageInfo
+| MappedImage of assetKey:string * mapKey:string * destRect: (int*int*int*int)
 | Text of DrawTextInfo
 | ColouredText of Color * DrawTextInfo
 | SoundEffect of string
@@ -46,6 +43,7 @@ type Resolution =
 
 type private Content =
 | TextureAsset of Texture2D
+| TextureMapAsset of Texture2D * Map<string, Rectangle>
 | FontAsset of SpriteFont
 | SoundAsset of SoundEffect
 
@@ -121,6 +119,17 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
             texture, asRectangle image.destRect, 
             sourceRect, colour, 0.0f, Vector2.Zero, 
             SpriteEffects.None, 0.0f)
+            
+    let drawMappedImage (spriteBatch: SpriteBatch) (assetKey, mapKey, destRect) colour = 
+        match Map.tryFind assetKey assets with
+        | Some (TextureMapAsset (texture, map)) when map.ContainsKey mapKey -> 
+            spriteBatch.Draw(
+                texture, asRectangle destRect, 
+                map.[mapKey] |> Nullable, colour, 0.0f, Vector2.Zero, 
+                SpriteEffects.None, 0.0f)
+        | Some (TextureMapAsset _) -> sprintf "Missing map key: %s in asset: %s" mapKey assetKey |> failwith
+        | None -> sprintf "Missing asset: %s" assetKey |> failwith
+        | _-> sprintf "Asset was not a Texture2D: %s" assetKey |> failwith
     
     let drawText (spriteBatch: SpriteBatch) text colour =
         let font =
@@ -152,13 +161,22 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
             assetsToLoad
             |> List.map (
                 function
-                | Texture info -> 
-                    use stream = File.OpenRead(info.path)
-                    info.key, Texture2D.FromStream(this.GraphicsDevice, stream) |> TextureAsset
-                | Font info -> info.key, this.Content.Load<SpriteFont>(info.path) |> FontAsset
-                | Sound info -> 
-                    use stream = File.OpenRead(info.path)
-                    info.key, SoundEffect.FromStream(stream) |> SoundAsset)
+                | Texture (key, path) -> 
+                    use stream = File.OpenRead path
+                    key, Texture2D.FromStream (this.GraphicsDevice, stream) |> TextureAsset
+                | TextureMap (key, texturePath, keyPath) -> 
+                    use stream = File.OpenRead texturePath
+                    let texture = Texture2D.FromStream (this.GraphicsDevice, stream)
+                    let content = 
+                        File.ReadAllLines keyPath |> Seq.skip 1 
+                        |> Seq.map (fun line -> line.Split(',') |> fun s -> s.[0], new Rectangle(int s.[1], int s.[2], int s.[3], int s.[4]))
+                        |> Map.ofSeq
+                    key, TextureMapAsset (texture, content)
+                | Font (key, path) -> 
+                    key, this.Content.Load<SpriteFont> path |> FontAsset
+                | Sound (key, path) -> 
+                    use stream = File.OpenRead path
+                    key, SoundEffect.FromStream stream |> SoundAsset)
             |> Map.ofList
 
     override __.Update(gameTime) =
@@ -186,6 +204,7 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
                 function 
                 | Image i -> drawImage spriteBatch i Color.White
                 | ColouredImage (c,i) -> drawImage spriteBatch i c
+                | MappedImage (a,m,d) -> drawMappedImage spriteBatch (a,m,d) Color.White
                 | Text t -> drawText spriteBatch t Color.Black
                 | ColouredText (c,t) -> drawText spriteBatch t c
                 | SoundEffect s -> playSound s)
