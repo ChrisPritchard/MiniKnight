@@ -20,6 +20,20 @@
     <None Include="Content\Maps\map3.bmp" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Maps\map4.bmp" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Maps\map5.bmp" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\background.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\goldCoin.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\knight.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\orc.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\portalArrive.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\portalDepart.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\spikes.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\stoneFloor.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\goldCoin-key.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\knight-key.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\orc-key.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\portalArrive-key.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\portalDepart-key.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Content\Sprites\stoneFloor-key.csv" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sounds\Coins\coin.wav" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sounds\Coins\coin2.wav" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Content\Sounds\Coins\coin3.wav" CopyToOutputDirectory="PreserveNewest" />
@@ -51,14 +65,6 @@
     <None Include="Content\Content.mgcb" />
     <None Include="Content\coders_crux.ttf" />
     <None Include="Content\coders_crux.spritefont" />
-    <None Include="Content\Sprites\background.png" />
-    <None Include="Content\Sprites\goldCoinSm.png" />
-    <None Include="Content\Sprites\Knight.png" />
-    <None Include="Content\Sprites\Orc.png" />
-    <None Include="Content\Sprites\portal-arrive.png" />
-    <None Include="Content\Sprites\portal-depart.png" />
-    <None Include="Content\Sprites\spikes.png" />
-    <None Include="Content\Sprites\stoneFloor.png" />
     <MonoGameContentReference Include="**\*.mgcb" />
   </ItemGroup>
   
