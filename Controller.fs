@@ -18,10 +18,16 @@ let checkForDirectionChange runState current =
     else
         current
 
+let checkForStateChange (runState : RunState) knight =
+    //let canReceiveCommand = runState.elapsed - lastCommandTime < timeBetweenCommands
+    if runState.IsPressed Keys.LeftAlt || runState.IsPressed Keys.RightAlt then Blocking
+    else Walking
+
 let handlePlayingState runState state =
     let knightDir = checkForDirectionChange runState state.knight.direction
+    let knightState = checkForStateChange runState state.knight
 
-    let newState = { state with knight = { state.knight with direction = knightDir } }
+    let newState = { state with knight = { state.knight with direction = knightDir; state = knightState } }
     Some (Playing newState)
 
 let advanceGame (runState : RunState) =

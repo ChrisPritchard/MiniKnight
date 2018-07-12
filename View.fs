@@ -25,10 +25,14 @@ let getKnightFrame (knight : Knight) elapsed =
     let frameFor max = gameFrame % float max |> int
 
     match knight.state with
-    | Standing -> byDir "standleft1" "standright1"
+    | Standing | Jumping _ -> byDir "standleft1" "standright1"
     | Walking -> 
         let frame = (if knight.direction = Left then 6 else 15) + frameFor 4
         sprintf "MiniKnight_%i" frame
+    | Striking ->
+        let frame = (if knight.direction = Left then 6 else 15) + frameFor 2
+        sprintf "MiniKnight_%i" frame
+    | Blocking -> byDir "guardleft1" "guardright1"
     | Dead -> byDir "deadleft2" "deadright2"
     | _ -> "standright1"
 

@@ -56,6 +56,7 @@ type RunState = {
     
 type RunState with
     member __.WasJustPressed key = List.contains key __.keyboard.keysDown
+    member __.IsPressed key = List.contains key __.keyboard.pressed
 
 type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
     as this = 
