@@ -23,18 +23,18 @@ let getKnightFrame (knight : Knight) elapsed =
     let byDir leftFrame rightFrame = if knight.direction = Left then leftFrame else rightFrame
     let gameFrame = elapsed / animSpeed
     let frameFor max = gameFrame % float max |> int
+    let numberedFrame leftStart rightStart maxFrame =
+        let frame = (if knight.direction = Left then leftStart else rightStart) + frameFor maxFrame
+        sprintf "MiniKnight_%i" frame
 
     match knight.state with
     | Standing | Jumping _ -> byDir "standleft1" "standright1"
-    | Walking -> 
-        let frame = (if knight.direction = Left then 6 else 15) + frameFor 4
-        sprintf "MiniKnight_%i" frame
-    | Striking ->
-        let frame = (if knight.direction = Left then 6 else 15) + frameFor 2
-        sprintf "MiniKnight_%i" frame
+    | Walking -> numberedFrame 6 15 4
+    | Striking -> numberedFrame 24 26 2
     | Blocking -> byDir "guardleft1" "guardright1"
+    | Hit _ -> numberedFrame 2 4 2
+    | Dying -> numberedFrame 10 19 5
     | Dead -> byDir "deadleft2" "deadright2"
-    | _ -> "standright1"
 
 let getPlayingView (runState : RunState) (state : PlayingState) =
     let elapsed = runState.elapsed
