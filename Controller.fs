@@ -7,27 +7,34 @@ open Microsoft.Xna.Framework.Input
 let timeBetweenCommands = 100.
 let mutable lastCommandTime = 0.
 
-let checkForDirectionChange runState current =
-    if runState.elapsed - lastCommandTime < timeBetweenCommands then current
-    else if (runState.WasJustPressed Keys.Left || runState.WasJustPressed Keys.A) && current <> Left then
+let checkForDirectionChange (runState : RunState) current =
+    let justPressed = List.exists runState.WasJustPressed
+    if runState.elapsed - lastCommandTime < timeBetweenCommands then 
+        current
+    else if justPressed [Keys.Left; Keys.A] && current <> Left then
         lastCommandTime <- runState.elapsed
         Left
-    else if (runState.WasJustPressed Keys.Right || runState.WasJustPressed Keys.D) && current <> Right then
+    else if justPressed [Keys.Right; Keys.D] && current <> Right then
         lastCommandTime <- runState.elapsed
         Right
     else
         current
 
 let checkForStateChange (runState : RunState) knight =
-    if runState.IsPressed Keys.LeftAlt || runState.IsPressed Keys.RightAlt then Blocking
+    let anyPressed = List.exists (fun k -> List.contains k runState.keyboard.pressed)
+    if anyPressed [Keys.LeftAlt;Keys.RightAlt] then 
+        Blocking
     // test
-    else if runState.IsPressed Keys.X then Dying
-    else if runState.elapsed - lastCommandTime < timeBetweenCommands then Walking
+    else if anyPressed [Keys.X] then 
+        Dying
+    else if runState.elapsed - lastCommandTime < timeBetweenCommands then 
+        Walking
     else
         if runState.WasJustPressed Keys.LeftControl || runState.WasJustPressed Keys.RightControl then
             lastCommandTime <- runState.elapsed
             Striking
-        else Walking
+        else 
+            Walking
 
 let handlePlayingState runState state =
     let knightDir = checkForDirectionChange runState state.knight.direction
