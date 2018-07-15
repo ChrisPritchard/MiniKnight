@@ -1,10 +1,10 @@
 module Model
 
-type World = 
+type GameModel = 
     | Menu
-    | Playing of PlayingState
+    | Playing of WorldState * ControllerState
     | GameOver of score:int
-and PlayingState = {
+and WorldState = {
     level: (int * int * MapTile) list
     coins: (int * int) list
     orcs: Orc list
@@ -29,20 +29,30 @@ and Knight = {
     health: int
     score: int
 }
-
-let startWorld = Playing { 
-    level = [
-            (-3,0,Block);(-2,0,EntryPortal);(-1,0,Coin);(-0,0,Coin);(1,0,Coin);(2,0,ExitPortal);(3,0,Block);
-            (-3,1,Spikes); (-2,1,Block); (-1,1,Block); (0,1,Block); (1,1,Block); (2,1,Block); (3,1,Spikes) 
-        ]
-    coins = []
-    orcs = []
-    knight = 
-    {
-        position = 0.,0.
-        state = Walking
-        direction = Right
-        health = 3
-        score = 0
-    } 
+and ControllerState = { 
+    lastCommandTime:float
+    lastAttackTime:float
+    lastPhysicsTime:float 
 }
+
+let startModel = 
+    Playing 
+    <| (
+        { 
+            level = [
+                    (-3,0,Block);(-2,0,EntryPortal);(-1,0,Coin);(-0,0,Coin);(1,0,Coin);(2,0,ExitPortal);(3,0,Block);
+                    (-3,1,Spikes); (-2,1,Block); (-1,1,Block); (0,1,Block); (1,1,Block); (2,1,Block); (3,1,Spikes) 
+                ]
+            coins = []
+            orcs = []
+            knight = 
+            {
+                position = 0.,0.
+                state = Walking
+                direction = Right
+                health = 3
+                score = 0
+            }
+        },
+        { lastCommandTime = 0.; lastAttackTime = 0.; lastPhysicsTime = 0. }
+    )

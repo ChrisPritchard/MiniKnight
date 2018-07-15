@@ -13,7 +13,7 @@ let mutable lastAttackTime = 0.
 let timeBetweenPhysics = 25.
 let mutable lastPhysicsTime = 0.
 
-let walkSpeed = 0.05
+let walkSpeed = 0.1
 
 let checkForDirectionChange (runState : RunState) current =
     let justPressed = List.exists runState.WasJustPressed
@@ -60,26 +60,27 @@ let checkForPosChange runState level (knight : Knight) =
         let (x, y) = knight.position
         match knight.state with
         | Walking -> 
+            lastPhysicsTime <- runState.elapsed
             let newX = if knight.direction = Left then x - walkSpeed else x + walkSpeed
             if collision (newX, y) level then (x, y) else (newX, y)
         | Jumping _ -> (x, y)
         | _ -> (x, y)
 
-let handlePlayingState runState state =
-    let knightDir = checkForDirectionChange runState state.knight.direction
-    let knightState = checkForStateChange runState state.knight
-    let newKnight = { state.knight with direction = knightDir; state = knightState }
+let handlePlayingState runState worldState controllerState =
+    let knightDir = checkForDirectionChange runState worldState.knight.direction
+    let knightState = checkForStateChange runState worldState.knight
+    let newKnight = { worldState.knight with direction = knightDir; state = knightState }
     
-    let knightPos = checkForPosChange runState state.level newKnight
-    let newState = { state with knight = { newKnight with position = knightPos } }
+    let knightPos = checkForPosChange runState worldState.level newKnight
+    let newState = { worldState with knight = { newKnight with position = knightPos } }
 
-    Some (Playing newState)
+    Some (Playing (newState, controllerState))
 
 let advanceGame (runState : RunState) =
     function
-    | None -> Some startWorld
+    | None -> Some startModel
     | _ when runState.WasJustPressed Keys.Escape -> None
-    | Some world -> 
-        match world with
-        | Playing state -> handlePlayingState runState state 
-        | _ -> Some world
+    | Some model -> 
+        match model with
+        | Playing (worldState, controllerState) -> handlePlayingState runState worldState controllerState
+        | _ -> Some model

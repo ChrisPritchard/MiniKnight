@@ -79,7 +79,7 @@ let getKnightFrame (knight : Knight) elapsed =
     | Dying -> numberedFrame 10 19 5
     | Dead -> byDir "deadleft2" "deadright2"
 
-let getPlayingView (runState : RunState) (state : PlayingState) =
+let getPlayingView (runState : RunState) (state : WorldState) =
     let elapsed = runState.elapsed
     seq {
         yield Image ("background", (0,0,screenWidth,screenHeight))
@@ -89,6 +89,6 @@ let getPlayingView (runState : RunState) (state : PlayingState) =
 
 let getView runState model =
     match model with
-    | Playing state ->
+    | Playing (state, _) ->
         getPlayingView runState state
     | _ -> []
