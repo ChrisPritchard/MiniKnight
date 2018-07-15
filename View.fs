@@ -21,17 +21,38 @@ let resolution = Windowed (screenWidth, screenHeight)
 let blockWidth, blockHeight = 40, 40
 let centreX, centreY = (screenWidth / 2) - (blockWidth / 2), (screenHeight / 2) - (blockHeight / 2)
 
+let validAdjacents = 
+    [
+        "00111000";"00111110";"00001110";"00001000";"11111000";"11111111";"10001111";"10001000";
+        "11100000";"11100011";"10000011";"10000000";"00100000";"00100010";"00000010";"00000000"
+    ]
+let adjacencyKey list = 
+    let key = 
+        [(0, -1);(1, -1);(1, 0);(1, 1);(0, 1);(-1, 1);(-1, 0);(-1, -1)]
+        |> List.map (fun pos -> if List.contains pos list then "1" else "0")
+        |> String.concat ""
+    if List.contains key validAdjacents then key else "00000000"
+
 let frameFor max elapsed = 
     let gameFrame = elapsed / animSpeed
     gameFrame % float max |> int
 
-let statics (knightX, knightY) elapsed =
+let blockFrame (x, y) level = 
+    let adjacent = level |> List.filter (fun (ox,oy,kind) ->
+        match kind with
+        | Block when abs (ox - x) < 2 && abs (oy - y) < 2 -> true
+        | _ -> false) |> List.map (fun (ox, oy, _) -> (ox - x, oy - y))
+    sprintf "floor%s" <| adjacencyKey adjacent
+
+let statics (knightX, knightY) elapsed level =
     let kwx, kwy = int (knightX * float blockWidth), int (knightY * float blockHeight)
-    List.map (fun (x,y,kind) ->
+    level |> List.map (fun (x,y,kind) ->
         let wx, wy = x * blockWidth - kwx, y * blockHeight - kwy
         let destRect = (centreX + wx, centreY + wy, blockWidth, blockHeight)
         match kind with
-        | Block -> MappedImage ("stoneFloor", "stoneFloor_15", destRect) // todo frame from adjacents
+        | Block -> 
+            let frame = blockFrame (x,y) level 
+            MappedImage ("stoneFloor", frame, destRect) // todo frame from adjacents
         | Spikes -> Image ("spikes", destRect)
         | Coin -> 
             let frame = sprintf "goldCoinSm_%i" <| frameFor 10 elapsed
