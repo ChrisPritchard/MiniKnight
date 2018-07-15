@@ -48,7 +48,10 @@ let checkForStateChange (runState : RunState) knight =
 
 let collision (x, y) level =
     let tx, ty = (floor x |> int), (floor y |> int)
-    List.exists (fun (mx, my, _) -> (mx = tx || mx = tx + 1) && my = ty) level
+    List.exists (fun (mx, my, kind) -> 
+        match kind with 
+        | Block when (mx = tx || mx = tx + 1) && my = ty -> true 
+        | _ -> false) level
 
 let checkForPosChange runState level (knight : Knight) =
     if runState.elapsed - lastPhysicsTime < timeBetweenPhysics then
