@@ -7,6 +7,9 @@ open Microsoft.Xna.Framework.Input
 let timeBetweenCommands = 100.
 let mutable lastCommandTime = 0.
 
+let timeForAttacks = 200.
+let mutable lastAttackTime = 0.
+
 let timeBetweenPhysics = 25.
 let mutable lastPhysicsTime = 0.
 
@@ -27,18 +30,18 @@ let checkForDirectionChange (runState : RunState) current =
 
 let checkForStateChange (runState : RunState) knight =
     let anyPressed = List.exists (fun k -> List.contains k runState.keyboard.pressed)
-    if anyPressed [Keys.LeftAlt;Keys.RightAlt] then 
+    if knight.state = Striking && runState.elapsed - lastAttackTime < timeForAttacks then
+        Striking
+    else if anyPressed [Keys.LeftAlt;Keys.RightAlt] then 
         Blocking
     else if anyPressed [Keys.Left;Keys.A;Keys.D;Keys.Right] then 
         Walking
-    // test
-    else if anyPressed [Keys.X] then 
-        Dying
     else if runState.elapsed - lastCommandTime < timeBetweenCommands then 
         Standing
     else
         if runState.WasJustPressed Keys.LeftControl || runState.WasJustPressed Keys.RightControl then
             lastCommandTime <- runState.elapsed
+            lastAttackTime <- runState.elapsed
             Striking
         else 
             Standing
