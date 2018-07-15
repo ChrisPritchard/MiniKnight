@@ -21,10 +21,11 @@ let resolution = Windowed (screenWidth, screenHeight)
 let blockWidth, blockHeight = 40, 40
 let centreX, centreY = (screenWidth / 2) - (blockWidth / 2), (screenHeight / 2) - (blockHeight / 2)
 
-let statics (kx,ky) =
+let statics (knightX, knightY) =
+    let kwx, kwy = int (knightX * float blockWidth), int (knightY * float blockHeight)
     List.map (fun (x,y,kind) ->
-        let ox, oy = (float x - kx) * float blockWidth, (float y - ky) * float blockHeight
-        let destRect = (centreX + int ox, centreY + int oy, blockWidth, blockHeight)
+        let wx, wy = x * blockWidth - kwx, y * blockHeight - kwy
+        let destRect = (centreX + wx, centreY + wy, blockWidth, blockHeight)
         match kind with
         | Block -> MappedImage ("stoneFloor", "stoneFloor_15", destRect)
         | Spikes -> Image ("spikes", destRect)
