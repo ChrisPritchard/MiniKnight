@@ -40,7 +40,7 @@ let getPlayingView (runState : RunState) (state : PlayingState) =
     let elapsed = runState.elapsed
     [
         Image ("background", (0,0,screenWidth,screenHeight), None)
-        MappedImage ("knight", getKnightFrame state.knight elapsed, (screenWidth/2, screenHeight/2, 40, 40))
+        MappedImage ("knight", getKnightFrame state.knight elapsed, (screenWidth/2, screenHeight/2, 36, 40))
     ]
 
 let getView runState model =
