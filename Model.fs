@@ -18,7 +18,7 @@ and Orc = {
     health: int
 }
 and EntityState = 
-    | Standing | Walking | Jumping of velocity:float 
+    | Standing | Walking | Jumping of velocity:(float * float)
     | Striking | Blocking | Hit of startTime:float
     | Dying | Dead
 and Direction = | Left | Right
@@ -31,7 +31,10 @@ and Knight = {
 }
 
 let startWorld = Playing { 
-    level = [ (-3,1,Spikes); (-2,1,Block); (-1,1,Block); (0,1,Block); (1,1,Block); (2,1,Block); (3,1,Spikes) ]
+    level = [ 
+        (-3,0,Spikes);                                                                    (3,0,Spikes);
+        (-3,1,Spikes); (-2,1,Block); (-1,1,Block); (0,1,Block); (1,1,Block); (2,1,Block); (3,1,Spikes) 
+        ]
     coins = []
     orcs = []
     knight = 

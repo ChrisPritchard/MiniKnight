@@ -7,6 +7,11 @@ open Microsoft.Xna.Framework.Input
 let timeBetweenCommands = 100.
 let mutable lastCommandTime = 0.
 
+let timeBetweenPhysics = 25.
+let mutable lastPhysicsTime = 0.
+
+let walkSpeed = 0.05
+
 let checkForDirectionChange (runState : RunState) current =
     let justPressed = List.exists runState.WasJustPressed
     if runState.elapsed - lastCommandTime < timeBetweenCommands then 
@@ -38,11 +43,30 @@ let checkForStateChange (runState : RunState) knight =
         else 
             Standing
 
+let collision (x, y) level =
+    let tx, ty = (floor x |> int), (floor y |> int)
+    List.exists (fun (mx, my, _) -> (mx = tx || mx = tx + 1) && my = ty) level
+
+let checkForPosChange runState level (knight : Knight) =
+    if runState.elapsed - lastPhysicsTime < timeBetweenPhysics then
+        knight.position
+    else
+        let (x, y) = knight.position
+        match knight.state with
+        | Walking -> 
+            let newX = if knight.direction = Left then x - walkSpeed else x + walkSpeed
+            if collision (newX, y) level then (x, y) else (newX, y)
+        | Jumping _ -> (x, y)
+        | _ -> (x, y)
+
 let handlePlayingState runState state =
     let knightDir = checkForDirectionChange runState state.knight.direction
     let knightState = checkForStateChange runState state.knight
+    let newKnight = { state.knight with direction = knightDir; state = knightState }
+    
+    let knightPos = checkForPosChange runState state.level newKnight
+    let newState = { state with knight = { newKnight with position = knightPos } }
 
-    let newState = { state with knight = { state.knight with direction = knightDir; state = knightState } }
     Some (Playing newState)
 
 let advanceGame (runState : RunState) =

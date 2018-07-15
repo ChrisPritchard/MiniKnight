@@ -23,8 +23,8 @@ let centreX, centreY = (screenWidth / 2) - (blockWidth / 2), (screenHeight / 2) 
 
 let statics (kx,ky) =
     List.map (fun (x,y,kind) ->
-        let ox, oy = int (float x - kx) * blockWidth, int (float y - ky) * blockHeight
-        let destRect = (centreX + ox, centreY + oy, blockWidth, blockHeight)
+        let ox, oy = (float x - kx) * float blockWidth, (float y - ky) * float blockHeight
+        let destRect = (centreX + int ox, centreY + int oy, blockWidth, blockHeight)
         match kind with
         | Block -> MappedImage ("stoneFloor", "stoneFloor_15", destRect)
         | Spikes -> Image ("spikes", destRect)
