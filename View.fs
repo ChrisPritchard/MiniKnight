@@ -21,7 +21,11 @@ let resolution = Windowed (screenWidth, screenHeight)
 let blockWidth, blockHeight = 40, 40
 let centreX, centreY = (screenWidth / 2) - (blockWidth / 2), (screenHeight / 2) - (blockHeight / 2)
 
-let statics (knightX, knightY) =
+let frameFor max elapsed = 
+    let gameFrame = elapsed / animSpeed
+    gameFrame % float max |> int
+
+let statics (knightX, knightY) elapsed =
     let kwx, kwy = int (knightX * float blockWidth), int (knightY * float blockHeight)
     List.map (fun (x,y,kind) ->
         let wx, wy = x * blockWidth - kwx, y * blockHeight - kwy
@@ -29,16 +33,20 @@ let statics (knightX, knightY) =
         match kind with
         | Block -> MappedImage ("stoneFloor", "stoneFloor_15", destRect) // todo frame from adjacents
         | Spikes -> Image ("spikes", destRect)
-        | Coin -> MappedImage ("goldCoin", "goldCoinSm_0", destRect) // todo anim from elapsed
-        | EntryPortal -> MappedImage ("portalArrive", "portal-arrive_0", destRect) // todo anim from elapsed
-        | ExitPortal -> MappedImage ("portalDepart", "portal_0", destRect)) // todo anim from elapsed
+        | Coin -> 
+            let frame = sprintf "goldCoinSm_%i" <| frameFor 10 elapsed
+            MappedImage ("goldCoin", frame, destRect)
+        | EntryPortal -> 
+            let frame = sprintf "portal-arrive_%i" <| frameFor 2 elapsed
+            MappedImage ("portalArrive", frame, destRect)
+        | ExitPortal -> 
+            let frame = sprintf "portal_%i" <| frameFor 2 elapsed
+            MappedImage ("portalDepart", frame, destRect))
 
 let getKnightFrame (knight : Knight) elapsed = 
     let byDir leftFrame rightFrame = if knight.direction = Left then leftFrame else rightFrame
-    let gameFrame = elapsed / animSpeed
-    let frameFor max = gameFrame % float max |> int
     let numberedFrame leftStart rightStart maxFrame =
-        let frame = (if knight.direction = Left then leftStart else rightStart) + frameFor maxFrame
+        let frame = (if knight.direction = Left then leftStart else rightStart) + (frameFor maxFrame elapsed)
         sprintf "MiniKnight_%i" frame
 
     match knight.state with
@@ -54,7 +62,7 @@ let getPlayingView (runState : RunState) (state : PlayingState) =
     let elapsed = runState.elapsed
     seq {
         yield Image ("background", (0,0,screenWidth,screenHeight))
-        yield! statics state.knight.position state.level
+        yield! statics state.knight.position elapsed state.level
         yield MappedImage ("knight", getKnightFrame state.knight elapsed, (centreX, centreY, blockWidth, blockHeight))
     } |> Seq.toList
 
