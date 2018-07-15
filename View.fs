@@ -4,6 +4,8 @@ open GameCore
 open Model
 
 let animSpeed = 200.
+let screenWidth, screenHeight = 800, 600
+let blockWidth, blockHeight = 40, 40
 
 let assetsToLoad = [
     Texture ("background", "./Content/Sprites/background.png")
@@ -16,9 +18,7 @@ let assetsToLoad = [
     TextureMap ("portalDepart", "./Content/Sprites/portalDepart.png", "./Content/Sprites/portalDepart-key.csv")
 ]
 
-let screenWidth, screenHeight = 800, 600
 let resolution = Windowed (screenWidth, screenHeight)
-let blockWidth, blockHeight = 40, 40
 let centreX, centreY = (screenWidth / 2) - (blockWidth / 2), (screenHeight / 2) - (blockHeight / 2)
 
 let validAdjacents = 
@@ -33,16 +33,16 @@ let adjacencyKey list =
         |> String.concat ""
     if List.contains key validAdjacents then key else "00000000"
 
-let frameFor max elapsed = 
-    let gameFrame = elapsed / animSpeed
-    gameFrame % float max |> int
-
 let blockFrame (x, y) level = 
     let adjacent = level |> List.filter (fun (ox,oy,kind) ->
         match kind with
         | Block when abs (ox - x) < 2 && abs (oy - y) < 2 -> true
         | _ -> false) |> List.map (fun (ox, oy, _) -> (ox - x, oy - y))
     sprintf "floor%s" <| adjacencyKey adjacent
+
+let frameFor max elapsed = 
+    let gameFrame = elapsed / animSpeed
+    gameFrame % float max |> int
 
 let statics (knightX, knightY) elapsed level =
     let kwx, kwy = int (knightX * float blockWidth), int (knightY * float blockHeight)
@@ -52,7 +52,7 @@ let statics (knightX, knightY) elapsed level =
         match kind with
         | Block -> 
             let frame = blockFrame (x,y) level 
-            MappedImage ("stoneFloor", frame, destRect) // todo frame from adjacents
+            MappedImage ("stoneFloor", frame, destRect)
         | Spikes -> Image ("spikes", destRect)
         | Coin -> 
             let frame = sprintf "goldCoinSm_%i" <| frameFor 10 elapsed
