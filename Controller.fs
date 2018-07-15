@@ -24,17 +24,19 @@ let checkForStateChange (runState : RunState) knight =
     let anyPressed = List.exists (fun k -> List.contains k runState.keyboard.pressed)
     if anyPressed [Keys.LeftAlt;Keys.RightAlt] then 
         Blocking
+    else if anyPressed [Keys.Left;Keys.A;Keys.D;Keys.Right] then 
+        Walking
     // test
     else if anyPressed [Keys.X] then 
         Dying
     else if runState.elapsed - lastCommandTime < timeBetweenCommands then 
-        Walking
+        Standing
     else
         if runState.WasJustPressed Keys.LeftControl || runState.WasJustPressed Keys.RightControl then
             lastCommandTime <- runState.elapsed
             Striking
         else 
-            Walking
+            Standing
 
 let handlePlayingState runState state =
     let knightDir = checkForDirectionChange runState state.knight.direction
@@ -46,6 +48,7 @@ let handlePlayingState runState state =
 let advanceGame (runState : RunState) =
     function
     | None -> Some startWorld
+    | _ when runState.WasJustPressed Keys.Escape -> None
     | Some world -> 
         match world with
         | Playing state -> handlePlayingState runState state 
