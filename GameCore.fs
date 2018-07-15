@@ -24,8 +24,8 @@ type DrawTextInfo = {
 }
 
 type ViewArtifact = 
-| Image of assetKey:string * destRect: (int*int*int*int) * sourceRect: (int*int*int*int) option
-| ColouredImage of assetKey:string * destRect: (int*int*int*int) * sourceRect: (int*int*int*int) option * color:Color
+| Image of assetKey:string * destRect: (int*int*int*int)
+| ColouredImage of assetKey:string * destRect: (int*int*int*int) * color:Color
 | MappedImage of assetKey:string * mapKey:string * destRect: (int*int*int*int)
 | Text of DrawTextInfo
 | ColouredText of Color * DrawTextInfo
@@ -100,20 +100,15 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
     let asRectangle (x,y,width,height) = 
         new Rectangle (x,y,width,height)
     
-    let drawImage (spriteBatch: SpriteBatch) (assetKey, destRect, sourceRect) colour = 
-        let sourceRect = 
-            match sourceRect with 
-            | None -> Unchecked.defaultof<Nullable<Rectangle>> 
-            | Some r -> asRectangle r |> Nullable
-        let texture =
-            match Map.tryFind assetKey assets with
-            | Some (TextureAsset t) -> t
-            | None -> sprintf "Missing asset: %s" assetKey |> failwith
-            | _-> sprintf "Asset was not a Texture2D: %s" assetKey |> failwith
-        spriteBatch.Draw(
-            texture, asRectangle destRect, 
-            sourceRect, colour, 0.0f, Vector2.Zero, 
-            SpriteEffects.None, 0.0f)
+    let drawImage (spriteBatch: SpriteBatch) (assetKey, destRect) colour = 
+        match Map.tryFind assetKey assets with
+        | Some (TextureAsset texture) -> 
+            spriteBatch.Draw(
+                texture, asRectangle destRect, 
+                Unchecked.defaultof<Nullable<Rectangle>>, colour, 0.0f, Vector2.Zero, 
+                SpriteEffects.None, 0.0f)
+        | None -> sprintf "Missing asset: %s" assetKey |> failwith
+        | _-> sprintf "Asset was not a Texture2D: %s" assetKey |> failwith
             
     let drawMappedImage (spriteBatch: SpriteBatch) (assetKey, mapKey, destRect) colour = 
         match Map.tryFind assetKey assets with
@@ -197,8 +192,8 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
         currentView
             |> List.iter (
                 function 
-                | Image (a,d,s) -> drawImage spriteBatch (a,d,s) Color.White
-                | ColouredImage (a,d,s,c) -> drawImage spriteBatch (a,d,s) c
+                | Image (a,d) -> drawImage spriteBatch (a,d) Color.White
+                | ColouredImage (a,d,c) -> drawImage spriteBatch (a,d) c
                 | MappedImage (a,m,d) -> drawMappedImage spriteBatch (a,m,d) Color.White
                 | Text t -> drawText spriteBatch t Color.Black
                 | ColouredText (c,t) -> drawText spriteBatch t c

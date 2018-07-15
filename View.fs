@@ -27,7 +27,7 @@ let statics (kx,ky) =
         let destRect = (centreX + ox, centreY + oy, blockWidth, blockHeight)
         match kind with
         | Block -> MappedImage ("stoneFloor", "stoneFloor_15", destRect)
-        | Spikes -> Image ("spikes", destRect, None)
+        | Spikes -> Image ("spikes", destRect)
         | _ -> failwith "Not implemented yet")
 
 let getKnightFrame (knight : Knight) elapsed = 
@@ -50,7 +50,7 @@ let getKnightFrame (knight : Knight) elapsed =
 let getPlayingView (runState : RunState) (state : PlayingState) =
     let elapsed = runState.elapsed
     seq {
-        yield Image ("background", (0,0,screenWidth,screenHeight), None)
+        yield Image ("background", (0,0,screenWidth,screenHeight))
         yield! statics state.knight.position state.level
         yield MappedImage ("knight", getKnightFrame state.knight elapsed, (centreX, centreY, blockWidth, blockHeight))
     } |> Seq.toList
