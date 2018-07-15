@@ -10,7 +10,7 @@ and PlayingState = {
     orcs: Orc list
     knight: Knight
 } 
-and MapTile = | Block | Spikes | Orc | Coin | EntryPortal | ExitPortal | Knight
+and MapTile = | Block | Spikes | Coin | EntryPortal | ExitPortal
 and Orc = {
     position: float * float
     state: EntityState

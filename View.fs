@@ -27,9 +27,11 @@ let statics (knightX, knightY) =
         let wx, wy = x * blockWidth - kwx, y * blockHeight - kwy
         let destRect = (centreX + wx, centreY + wy, blockWidth, blockHeight)
         match kind with
-        | Block -> MappedImage ("stoneFloor", "stoneFloor_15", destRect)
+        | Block -> MappedImage ("stoneFloor", "stoneFloor_15", destRect) // todo frame from adjacents
         | Spikes -> Image ("spikes", destRect)
-        | _ -> failwith "Not implemented yet")
+        | Coin -> MappedImage ("goldCoin", "goldCoinSm_0", destRect) // todo anim from elapsed
+        | EntryPortal -> MappedImage ("portalArrive", "portal-arrive_0", destRect) // todo anim from elapsed
+        | ExitPortal -> MappedImage ("portalDepart", "portal_0", destRect)) // todo anim from elapsed
 
 let getKnightFrame (knight : Knight) elapsed = 
     let byDir leftFrame rightFrame = if knight.direction = Left then leftFrame else rightFrame
