@@ -18,6 +18,16 @@ let assetsToLoad = [
 
 let screenWidth, screenHeight = 800, 600
 let resolution = Windowed (screenWidth, screenHeight)
+let blockWidth, blockHeight = 40, 40
+
+let statics (kx,ky) =
+    List.map (fun (x,y,kind) ->
+        let (ox, oy) = int (float x - kx) * blockWidth, int (float y - ky) * blockHeight
+        let destRect = (screenWidth / 2 + ox, screenHeight / 2 + oy, blockWidth, blockHeight)
+        match kind with
+        | Block -> MappedImage ("stoneFloor", "stoneFloor_15", destRect)
+        | Spikes -> Image ("spikes", destRect, None)
+        | _ -> failwith "Not implemented yet")
 
 let getKnightFrame (knight : Knight) elapsed = 
     let byDir leftFrame rightFrame = if knight.direction = Left then leftFrame else rightFrame
@@ -38,10 +48,11 @@ let getKnightFrame (knight : Knight) elapsed =
 
 let getPlayingView (runState : RunState) (state : PlayingState) =
     let elapsed = runState.elapsed
-    [
-        Image ("background", (0,0,screenWidth,screenHeight), None)
-        MappedImage ("knight", getKnightFrame state.knight elapsed, (screenWidth/2, screenHeight/2, 36, 40))
-    ]
+    seq {
+        yield Image ("background", (0,0,screenWidth,screenHeight), None)
+        yield! statics state.knight.position state.level
+        yield MappedImage ("knight", getKnightFrame state.knight elapsed, (screenWidth/2, screenHeight/2, 36, 40))
+    } |> Seq.toList
 
 let getView runState model =
     match model with

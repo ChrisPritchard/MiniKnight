@@ -31,7 +31,7 @@ and Knight = {
 }
 
 let startWorld = Playing { 
-    level = []
+    level = [ (-3,1,Spikes); (-2,1,Block); (-1,1,Block); (0,1,Block); (1,1,Block); (2,1,Block); (3,1,Spikes) ]
     coins = []
     orcs = []
     knight = 
