@@ -72,9 +72,12 @@ let checkForPosChange runState (worldState, controllerState) =
             let newPos = if collision (newX, y) worldState.blocks then (x, y) else (newX, y)
             worldState.withKnightPosition newPos,
             { controllerState with lastPhysicsTime = runState.elapsed }
-        | Jumping _ -> 
-            worldState, // todo
-            controllerState
+        | Jumping (vx, vy) -> 
+            let newX = if knight.direction = Left then x - vx else x + vx
+            let newY = y - vy
+            let newPos = if collision (newX, newY) worldState.blocks then (x, y) else (newX, newY)
+            worldState.withKnightPosition newPos,
+            { controllerState with lastPhysicsTime = runState.elapsed }
         | _ -> 
             worldState,
             controllerState
