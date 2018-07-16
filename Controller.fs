@@ -3,7 +3,6 @@ module Controller
 open GameCore
 open Model
 open Microsoft.Xna.Framework.Input
-open Aether.Operators
 
 let timeBetweenCommands = 100.
 let timeForAttacks = 200.
@@ -20,11 +19,11 @@ let checkForDirectionChange (runState: RunState) worldState (controllerState: Co
         controllerState
     else if justPressed [Keys.Left; Keys.A] && current <> Left 
     then
-        worldState |> Left ^= knightDirection,
+        worldState.withKnightDirection Left,
         { controllerState with lastCommandTime = runState.elapsed }
     else if justPressed [Keys.Right; Keys.D] && current <> Right 
     then
-        worldState |> Right ^= knightDirection,
+        worldState.withKnightDirection Right,
         { controllerState with lastCommandTime = runState.elapsed }
     else
         worldState, 
@@ -38,22 +37,22 @@ let checkForStateChange runState worldState controllerState =
         controllerState
     else if anyPressed [Keys.LeftAlt;Keys.RightAlt] 
     then 
-        worldState |> Blocking ^= knightState,
+        worldState.withKnightState Blocking,
         controllerState
     else if anyPressed [Keys.Left;Keys.A;Keys.D;Keys.Right] then 
-        worldState |> Walking ^= knightState,
+        worldState.withKnightState Walking,
         controllerState
     else if runState.elapsed - controllerState.lastCommandTime < timeBetweenCommands then 
-        worldState |> Standing ^= knightState,
+        worldState.withKnightState Standing,
         controllerState
     else
         if runState.WasJustPressed Keys.LeftControl || runState.WasJustPressed Keys.RightControl then
-            worldState |> Striking ^= knightState,
+            worldState.withKnightState Striking,
             { controllerState with
                 lastCommandTime = runState.elapsed
                 lastAttackTime = runState.elapsed }
         else 
-            worldState |> Standing ^= knightState,
+            worldState.withKnightState Standing,
             controllerState
 
 let collision (x, y) level =
@@ -74,7 +73,7 @@ let checkForPosChange runState worldState controllerState =
         | Walking -> 
             let newX = if knight.direction = Left then x - walkSpeed else x + walkSpeed
             let newPos = if collision (newX, y) worldState.level then (x, y) else (newX, y)
-            worldState |> newPos ^= knightPosition,
+            worldState.withKnightPosition newPos,
             { controllerState with lastPhysicsTime = runState.elapsed }
         | Jumping _ -> 
             worldState, // todo

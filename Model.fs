@@ -1,7 +1,5 @@
 module Model
 
-open Aether.Operators
-
 type GameModel = 
     | Menu
     | Playing of WorldState * ControllerState
@@ -38,15 +36,9 @@ and ControllerState = {
 }
 
 type WorldState with 
-    static member knightLens = (fun target -> target.knight), (fun knight target -> { target with knight = knight })
-type Knight with
-    static member stateLens = (fun target -> target.state), (fun state (target: Knight) -> { target with state = state })
-    static member positionLens = (fun target -> target.position), (fun position (target: Knight) -> { target with position = position })
-    static member directionLens = (fun target -> target.direction), (fun direction (target: Knight) -> { target with direction = direction })
-
-let knightState = WorldState.knightLens >-> Knight.stateLens
-let knightPosition = WorldState.knightLens >-> Knight.positionLens
-let knightDirection = WorldState.knightLens >-> Knight.directionLens
+    member __.withKnightDirection direction = { __ with knight = { __.knight with direction = direction } }
+    member __.withKnightPosition position = { __ with knight = { __.knight with position = position } }
+    member __.withKnightState state = { __ with knight = { __.knight with state = state } }
 
 let startModel = 
     Playing 
