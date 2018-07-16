@@ -5,7 +5,7 @@ open Model
 
 let animSpeed = 200.
 let screenWidth, screenHeight = 800, 600
-let blockWidth, blockHeight = 20, 20
+let blockWidth, blockHeight = 40, 40
 
 let assetsToLoad = [
     Texture ("background", "./Content/Sprites/background.png")

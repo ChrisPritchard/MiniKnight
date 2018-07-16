@@ -49,7 +49,10 @@ let getStartModel level =
             orcs = []
             knight = 
             {
-                position = 0.,0.
+                position = 
+                    match Seq.tryFind (fun (_,_,kind) -> kind = EntryPortal) level with 
+                    | Some (x,y,_) -> float x, float y 
+                    | None -> 0.,0.
                 state = Walking
                 direction = Right
                 health = 3
