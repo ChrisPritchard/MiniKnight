@@ -88,7 +88,7 @@ let handlePlayingState runState worldState controllerState =
 
 let advanceGame (runState : RunState) =
     function
-    | None -> MapLoader.getLevel 1 |> getStartModel |> Some 
+    | None -> MapLoader.getLevel 1 |> getLevelModel |> Some 
     | _ when runState.WasJustPressed Keys.Escape -> None
     | Some model -> 
         match model with

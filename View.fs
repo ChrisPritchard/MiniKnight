@@ -21,25 +21,6 @@ let assetsToLoad = [
 let resolution = Windowed (screenWidth, screenHeight)
 let centreX, centreY = (screenWidth / 2) - (blockWidth / 2), (screenHeight / 2) - (blockHeight / 2)
 
-let validAdjacents = 
-    [
-        "00111000";"00111110";"00001110";"00001000";"11111000";"11111111";"10001111";"10001000";
-        "11100000";"11100011";"10000011";"10000000";"00100000";"00100010";"00000010";"00000000"
-    ]
-let adjacencyKey list = 
-    let key = 
-        [(0, -1);(1, -1);(1, 0);(1, 1);(0, 1);(-1, 1);(-1, 0);(-1, -1)]
-        |> List.map (fun pos -> if List.contains pos list then "1" else "0")
-        |> String.concat ""
-    if List.contains key validAdjacents then key else "00000000"
-
-let blockFrame (x, y) level = 
-    let adjacent = level |> List.filter (fun (ox,oy,kind) ->
-        match kind with
-        | Block when abs (ox - x) < 2 && abs (oy - y) < 2 -> true
-        | _ -> false) |> List.map (fun (ox, oy, _) -> (ox - x, oy - y))
-    sprintf "floor%s" <| adjacencyKey adjacent
-
 let frameFor max elapsed = 
     let gameFrame = elapsed / animSpeed
     gameFrame % float max |> int
