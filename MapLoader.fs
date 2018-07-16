@@ -9,9 +9,8 @@ let mapKey = [
     (Color.FromArgb(38, 127, 0), EntryPortal)
     (Color.FromArgb(10, 38, 255), ExitPortal)
     (Color.FromArgb(255, 216, 0), Coin)
-    // TODO (Color.FromArgb(0, 0, 0), Orc)
+    (Color.FromArgb(0, 0, 0), Orc)
 ]
-
 
 let getLevel num = 
     use bitmap = Bitmap.FromFile <| sprintf "./Content/Maps/map%i.bmp" num :?> Bitmap

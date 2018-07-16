@@ -5,12 +5,15 @@ type GameModel =
     | Playing of WorldState * ControllerState
     | GameOver of score:int
 and WorldState = {
-    level: (int * int * MapTile) list
+    blocks: (int * int * string) list
+    spikes: (int * int) list
     coins: (int * int) list
+    entryPortal: int * int
+    exitPortal: int * int
     orcs: Orc list
     knight: Knight
 } 
-and MapTile = | Block | Spikes | Coin | EntryPortal | ExitPortal
+and MapTile = | Block | Spikes | Coin | Orc | EntryPortal | ExitPortal
 and Orc = {
     position: float * float
     state: EntityState
@@ -44,9 +47,12 @@ let getStartModel level =
     Playing 
     <| (
         { 
-            level = level
+            blocks = []
+            spikes = []
             coins = []
             orcs = []
+            entryPortal = 0,0
+            exitPortal = 0,0
             knight = 
             {
                 position = 

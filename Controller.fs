@@ -55,12 +55,9 @@ let checkForStateChange runState worldState controllerState =
             worldState.withKnightState Standing,
             controllerState
 
-let collision (x, y) level =
+let collision (x, y) blocks =
     let tx, ty = (floor x |> int), (floor y |> int)
-    List.exists (fun (mx, my, kind) -> 
-        match kind with 
-        | Block when (mx = tx || mx = tx + 1) && my = ty -> true 
-        | _ -> false) level
+    List.exists (fun (mx, my, _) -> (mx = tx || mx = tx + 1) && my = ty) blocks
 
 let checkForPosChange runState worldState controllerState =
     let knight = worldState.knight
@@ -72,7 +69,7 @@ let checkForPosChange runState worldState controllerState =
         match knight.state with
         | Walking -> 
             let newX = if knight.direction = Left then x - walkSpeed else x + walkSpeed
-            let newPos = if collision (newX, y) worldState.level then (x, y) else (newX, y)
+            let newPos = if collision (newX, y) worldState.blocks then (x, y) else (newX, y)
             worldState.withKnightPosition newPos,
             { controllerState with lastPhysicsTime = runState.elapsed }
         | Jumping _ -> 
