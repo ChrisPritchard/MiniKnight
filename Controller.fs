@@ -9,7 +9,7 @@ let timeForAttacks = 200.
 let timeBetweenPhysics = 25.
 let walkSpeed = 0.1
 
-let checkForDirectionChange (runState: RunState) worldState (controllerState: ControllerState) =
+let checkForDirectionChange (runState: RunState) (worldState, controllerState) =
     let justPressed = List.exists runState.WasJustPressed
     let current = worldState.knight.direction
 
@@ -29,7 +29,7 @@ let checkForDirectionChange (runState: RunState) worldState (controllerState: Co
         worldState, 
         controllerState
 
-let checkForStateChange runState worldState controllerState =
+let checkForStateChange runState (worldState, controllerState) =
     let anyPressed = List.exists (fun k -> List.contains k runState.keyboard.pressed)
     if worldState.knight.state = Striking && runState.elapsed - controllerState.lastAttackTime < timeForAttacks 
     then
@@ -59,7 +59,7 @@ let collision (x, y) blocks =
     let tx, ty = (floor x |> int), (floor y |> int)
     List.exists (fun (mx, my, _) -> (mx = tx || mx = tx + 1) && my = ty) blocks
 
-let checkForPosChange runState worldState controllerState =
+let checkForPosChange runState (worldState, controllerState) =
     let knight = worldState.knight
     if runState.elapsed - controllerState.lastPhysicsTime < timeBetweenPhysics then
         worldState,
@@ -80,11 +80,11 @@ let checkForPosChange runState worldState controllerState =
             controllerState
 
 let handlePlayingState runState worldState controllerState =
-    let (worldState,controllerState) = checkForDirectionChange runState worldState controllerState
-    let (worldState,controllerState) = checkForStateChange runState worldState controllerState
-    let (worldState,controllerState) = checkForPosChange runState worldState controllerState
-
-    Some (Playing (worldState,controllerState))
+    (worldState, controllerState)
+    |> checkForDirectionChange runState
+    |> checkForStateChange runState
+    |> checkForPosChange runState
+    |> Playing |> Some
 
 let advanceGame (runState : RunState) =
     function
@@ -92,5 +92,6 @@ let advanceGame (runState : RunState) =
     | _ when runState.WasJustPressed Keys.Escape -> None
     | Some model -> 
         match model with
-        | Playing (worldState, controllerState) -> handlePlayingState runState worldState controllerState
+        | Playing (worldState, controllerState) -> 
+            handlePlayingState runState worldState controllerState
         | _ -> Some model
