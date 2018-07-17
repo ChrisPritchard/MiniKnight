@@ -9,6 +9,9 @@ let timeForAttacks = 200.
 let timeBetweenPhysics = 25.
 let walkSpeed = 0.1
 
+let applyGravity (runState: RunState) (worldState, controllerState) =
+    worldState, controllerState
+
 let checkForDirectionChange (runState: RunState) (worldState, controllerState) =
     let justPressed = List.exists runState.WasJustPressed
     let current = worldState.knight.direction
@@ -72,18 +75,13 @@ let checkForPosChange runState (worldState, controllerState) =
             let newPos = if collision (newX, y) worldState.blocks then (x, y) else (newX, y)
             worldState.withKnightPosition newPos,
             { controllerState with lastPhysicsTime = runState.elapsed }
-        | Jumping (vx, vy) -> 
-            let newX = if knight.direction = Left then x - vx else x + vx
-            let newY = y - vy
-            let newPos = if collision (newX, newY) worldState.blocks then (x, y) else (newX, newY)
-            worldState.withKnightPosition newPos,
-            { controllerState with lastPhysicsTime = runState.elapsed }
         | _ -> 
             worldState,
             controllerState
 
 let handlePlayingState runState worldState controllerState =
     (worldState, controllerState)
+    |> applyGravity runState
     |> checkForDirectionChange runState
     |> checkForStateChange runState
     |> checkForPosChange runState

@@ -21,14 +21,14 @@ and Orc = {
     health: int
 }
 and EntityState = 
-    | Standing | Walking | Jumping of velocity:(float * float)
-    | Striking | Blocking | Hit of startTime:float
-    | Dying | Dead
+    | Standing | Walking | Striking | Blocking 
+    | Hit of startTime:float | Dying | Dead
 and Direction = | Left | Right
 and Knight = {
     position: float * float
     state: EntityState
     direction: Direction
+    fallSpeed: float
     health: int
     score: int
 }
@@ -42,6 +42,7 @@ type WorldState with
     member __.withKnightDirection direction = { __ with knight = { __.knight with direction = direction } }
     member __.withKnightPosition position = { __ with knight = { __.knight with position = position } }
     member __.withKnightState state = { __ with knight = { __.knight with state = state } }
+    member __.withKnightFallSpeed speed = { __ with knight = { __.knight with fallSpeed = speed } }
 
 let validAdjacents = 
     [
@@ -88,6 +89,7 @@ let getLevelModel levelMapTiles =
                 position = entryPortal |> (fun (x, y) -> float x, float y)
                 state = Standing
                 direction = Right
+                fallSpeed = 0.
                 health = 3
                 score = 0
             }

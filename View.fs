@@ -67,7 +67,7 @@ let getKnightFrame (knight : Knight) elapsed =
         sprintf "MiniKnight_%i" frame
 
     match knight.state with
-    | Standing | Jumping _ -> byDir "standleft1" "standright1"
+    | Standing -> byDir "standleft1" "standright1"
     | Walking -> numberedFrame 6 15 4
     | Striking -> numberedFrame 24 26 2
     | Blocking -> byDir "guardleft1" "guardright1"
