@@ -13,10 +13,13 @@ let jumpSpeed = -0.55
 let gravityStrength = 0.05
 let terminalSpeed = 0.9
 
-let collision (x, y) blocks =
-    let hor = (floor x |> int), (floor y |> int)
-    let ver = (ceil x |> int), (ceil y |> int)
-    List.exists (fun (mx, my, _) -> (mx, my) = hor || (mx, my) = ver) blocks
+let horizontalCollision (x, y) blocks =
+    let fx, cx = floor x |> int, ceil x |> int
+    blocks |> List.exists (fun (mx, my, _) -> my = int y && (mx = fx || mx = cx)) 
+    
+let verticalCollision (x, y) blocks =
+    let fy, cy = floor y |> int, ceil y |> int
+    blocks |> List.exists (fun (mx, my, _) -> mx = int x && (my = fy || my = cy)) 
 
 let checkForFallingPosChange (runState: RunState) (worldState, controllerState) =
     if runState.elapsed - controllerState.lastGravityTime < timeBetweenGravity then
@@ -28,7 +31,7 @@ let checkForFallingPosChange (runState: RunState) (worldState, controllerState) 
         let newFallSpeed = if abs newFallSpeed > terminalSpeed then knight.fallSpeed else newFallSpeed
         let (x, y) = knight.position;
         let newY = y + newFallSpeed;
-        let isCollision = collision (x, newY)  worldState.blocks
+        let isCollision = verticalCollision (x, newY) worldState.blocks
         let newPos = if isCollision then (x, y) else (x, newY)
         let newFallSpeed = if isCollision then 0. else newFallSpeed
         (worldState.withKnightPosition newPos).withKnightFallSpeed newFallSpeed,
@@ -95,7 +98,7 @@ let checkForWalkingPosChange runState (worldState, controllerState) =
         match knight.state with
         | Walking -> 
             let newX = if knight.direction = Left then x - walkSpeed else x + walkSpeed
-            let newPos = if collision (newX, y) worldState.blocks then (x, y) else (newX, y)
+            let newPos = if horizontalCollision (newX, y) worldState.blocks then (x, y) else (newX, y)
             worldState.withKnightPosition newPos,
             { controllerState with lastMovementTime = runState.elapsed }
         | _ -> 
