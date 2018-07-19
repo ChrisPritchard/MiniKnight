@@ -6,11 +6,28 @@ open Microsoft.Xna.Framework.Input
 
 let timeBetweenCommands = 100.
 let timeForAttacks = 200.
-let timeBetweenPhysics = 25.
+let timeBetweenMovement = 25.
+let timeBetweenGravity = 25.
 let walkSpeed = 0.1
+let jumpSpeed = -1.
+let gravityStrength = 0.1
 
-let applyGravity (runState: RunState) (worldState, controllerState) =
-    worldState, controllerState
+let collision (x, y) blocks =
+    let tx, ty = (floor x |> int), (floor y |> int)
+    List.exists (fun (mx, my, _) -> (mx = tx || mx = tx + 1) && my = ty) blocks
+
+let checkForFallingPosChange (runState: RunState) (worldState, controllerState) =
+    if runState.elapsed - controllerState.lastGravityTime < timeBetweenGravity then
+        worldState,
+        controllerState
+    else
+        let knight = worldState.knight;
+        let newFallSpeed = knight.fallSpeed + gravityStrength
+        let (x, y) = knight.position;
+        let newY = y + newFallSpeed;
+        let newPos = if collision (x, newY) worldState.blocks then (x, y) else (x, newY)
+        (worldState.withKnightPosition newPos).withKnightFallSpeed newFallSpeed,
+        { controllerState with lastGravityTime = runState.elapsed }
 
 let checkForDirectionChange (runState: RunState) (worldState, controllerState) =
     let justPressed = List.exists runState.WasJustPressed
@@ -54,17 +71,17 @@ let checkForStateChange runState (worldState, controllerState) =
             { controllerState with
                 lastCommandTime = runState.elapsed
                 lastAttackTime = runState.elapsed }
-        else 
+        else if worldState.knight.fallSpeed = 0. && (runState.WasJustPressed Keys.Space || runState.WasJustPressed Keys.W) then
+            worldState.withKnightFallSpeed jumpSpeed,
+            { controllerState with
+                lastCommandTime = runState.elapsed }
+        else
             worldState.withKnightState Standing,
             controllerState
 
-let collision (x, y) blocks =
-    let tx, ty = (floor x |> int), (floor y |> int)
-    List.exists (fun (mx, my, _) -> (mx = tx || mx = tx + 1) && my = ty) blocks
-
-let checkForPosChange runState (worldState, controllerState) =
+let checkForWalkingPosChange runState (worldState, controllerState) =
     let knight = worldState.knight
-    if runState.elapsed - controllerState.lastPhysicsTime < timeBetweenPhysics then
+    if runState.elapsed - controllerState.lastMovementTime < timeBetweenMovement then
         worldState,
         controllerState
     else
@@ -74,17 +91,17 @@ let checkForPosChange runState (worldState, controllerState) =
             let newX = if knight.direction = Left then x - walkSpeed else x + walkSpeed
             let newPos = if collision (newX, y) worldState.blocks then (x, y) else (newX, y)
             worldState.withKnightPosition newPos,
-            { controllerState with lastPhysicsTime = runState.elapsed }
+            { controllerState with lastMovementTime = runState.elapsed }
         | _ -> 
             worldState,
             controllerState
 
 let handlePlayingState runState worldState controllerState =
     (worldState, controllerState)
-    |> applyGravity runState
+    |> checkForFallingPosChange runState
     |> checkForDirectionChange runState
     |> checkForStateChange runState
-    |> checkForPosChange runState
+    |> checkForWalkingPosChange runState
     |> Playing |> Some
 
 let advanceGame (runState : RunState) =

@@ -35,7 +35,8 @@ and Knight = {
 and ControllerState = { 
     lastCommandTime:float
     lastAttackTime:float
-    lastPhysicsTime:float 
+    lastMovementTime:float 
+    lastGravityTime:float
 }
 
 type WorldState with 
@@ -94,5 +95,5 @@ let getLevelModel levelMapTiles =
                 score = 0
             }
         },
-        { lastCommandTime = 0.; lastAttackTime = 0.; lastPhysicsTime = 0. }
+        { lastCommandTime = 0.; lastAttackTime = 0.; lastMovementTime = 0.; lastGravityTime = 0. }
     )
