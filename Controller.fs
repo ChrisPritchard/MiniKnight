@@ -8,8 +8,8 @@ let timeBetweenCommands = 100.
 let timeForAttacks = 200.
 let timeBetweenMovement = 25.
 let timeBetweenGravity = 25.
-let walkSpeed = 0.2
-let jumpSpeed = -0.6
+let walkSpeed = 0.15
+let jumpSpeed = -0.55
 let gravityStrength = 0.05
 let terminalSpeed = 0.9
 
@@ -56,33 +56,34 @@ let checkForDirectionChange (runState: RunState) (worldState, controllerState) =
 
 let checkForStateChange runState (worldState, controllerState) =
     let anyPressed = List.exists (fun k -> List.contains k runState.keyboard.pressed)
+    let canCommand = runState.elapsed - controllerState.lastCommandTime >= timeBetweenCommands
+
     if worldState.knight.state = Striking && runState.elapsed - controllerState.lastAttackTime < timeForAttacks 
     then
         worldState, 
         controllerState
+    else if canCommand && (runState.WasJustPressed Keys.LeftControl || runState.WasJustPressed Keys.RightControl) 
+    then
+        worldState.withKnightState Striking,
+        { controllerState with
+            lastCommandTime = runState.elapsed
+            lastAttackTime = runState.elapsed }
+    else if canCommand && worldState.knight.fallSpeed = 0. && (runState.WasJustPressed Keys.Space || runState.WasJustPressed Keys.W) 
+    then
+        worldState.withKnightFallSpeed jumpSpeed,
+        { controllerState with
+            lastCommandTime = runState.elapsed }
     else if anyPressed [Keys.LeftAlt;Keys.RightAlt] 
     then 
         worldState.withKnightState Blocking,
         controllerState
-    else if anyPressed [Keys.Left;Keys.A;Keys.D;Keys.Right] then 
+    else if anyPressed [Keys.Left;Keys.A;Keys.D;Keys.Right] 
+    then 
         worldState.withKnightState Walking,
         controllerState
-    else if runState.elapsed - controllerState.lastCommandTime < timeBetweenCommands then 
+    else
         worldState.withKnightState Standing,
         controllerState
-    else
-        if runState.WasJustPressed Keys.LeftControl || runState.WasJustPressed Keys.RightControl then
-            worldState.withKnightState Striking,
-            { controllerState with
-                lastCommandTime = runState.elapsed
-                lastAttackTime = runState.elapsed }
-        else if worldState.knight.fallSpeed = 0. && (runState.WasJustPressed Keys.Space || runState.WasJustPressed Keys.W) then
-            worldState.withKnightFallSpeed jumpSpeed,
-            { controllerState with
-                lastCommandTime = runState.elapsed }
-        else
-            worldState.withKnightState Standing,
-            controllerState
 
 let checkForWalkingPosChange runState (worldState, controllerState) =
     let knight = worldState.knight
