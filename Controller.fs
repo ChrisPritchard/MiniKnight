@@ -106,8 +106,18 @@ let terminalSpeed = 0.9
 //             controllerState
 
 let processKnight runState (worldState, controllerState) =
+    let knight = worldState.knight
+    let (kx, ky) = knight.position
+
     // gather surrounding blocks
-    // if airborne then fall
+    //  (0,0)   (1,0)   (2,0)
+    //  (0,1)   (1,1)   (2,1)
+    //  (0,2)   (1,2)   (2,2)
+
+    let adjacentBlocks = worldState.blocks |> List.where (fun (x, y, _) -> 
+        float x = floor kx - 1. && float y = floor ky - 1.)
+
+    // if airborne then rise/fall
         // check collision
     // if striking continue
     // if blocking block
