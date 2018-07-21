@@ -13,20 +13,26 @@ let jumpSpeed = -0.55
 let gravityStrength = 0.05
 let terminalSpeed = 0.9
 
-type Command = | WalkLeft | WalkRight | Jump | Strike | Block
-let commandMap = [
-    ([Keys.A;Keys.Left], WalkLeft)
-    ([Keys.D;Keys.Right], WalkRight)
-    ([Keys.W;Keys.Space], Jump)
-    ([Keys.LeftControl;Keys.RightControl], Strike)
-    ([Keys.LeftAlt;Keys.RightAlt], Block)
-]
+let walkLeftKeys = [Keys.A;Keys.Left]
+let walkRightKeys = [Keys.D;Keys.Right]
+let jumpKeys = [Keys.W;Keys.Space]
+let strikeKeys = [Keys.LeftControl;Keys.RightControl]
+let blockKeys = [Keys.LeftAlt;Keys.RightAlt]
 
-let getCommands (runState: RunState) = 
-    commandMap 
-        |> List.map (fun (keys, command) ->
-            if List.exists runState.IsPressed keys then Some command else None)
-        |> List.choose id
+// type Command = | WalkLeft | WalkRight | Jump | Strike | Block
+// let commandMap = [
+//     ([Keys.A;Keys.Left], WalkLeft)
+//     ([Keys.D;Keys.Right], WalkRight)
+//     ([Keys.W;Keys.Space], Jump)
+//     ([Keys.LeftControl;Keys.RightControl], Strike)
+//     ([Keys.LeftAlt;Keys.RightAlt], Block)
+// ]
+
+// let getCommands (runState: RunState) = 
+//     commandMap 
+//         |> List.map (fun (keys, command) ->
+//             if List.exists runState.IsPressed keys then Some command else None)
+//         |> List.choose id
 
 // let horizontalCollision direction (x, y) blocks =
 //     let dx = if direction = Left then floor x |> int else ceil x |> int
@@ -126,17 +132,9 @@ let tryWalk direction (x, y) blocks =
         float by = y && (if direction = Left then float bx = floor x else float bx = ceil x))
     match blocker with Some _ -> (x, y) | None -> (newX, y)
 
-let checkForJumpAndFall commands blocks (knightDirection, knightPosition) =
-    (knightDirection, knightPosition)
-
-let checkForWalk commands blocks (knightDirection, knightPosition) =
-    if List.contains WalkLeft commands then Left, knightPosition
-    else if List.contains WalkRight commands then Right, knightPosition
-    else knightDirection, knightPosition
-
 let getWalkCommand (runState: RunState) =
-    let left = if runState.IsAnyPressed [Keys.A;Keys.Left] then Some Left else None
-    let right = if runState.IsAnyPressed [Keys.D;Keys.Right] then Some Right else None
+    let left = if runState.IsAnyPressed walkLeftKeys then Some Left else None
+    let right = if runState.IsAnyPressed walkRightKeys then Some Right else None
     match [left;right] |> List.choose id with
     | [dir] -> Some dir
     | _ -> None
@@ -147,40 +145,42 @@ let isStriking knight runState controllerState =
 let processKnight runState (worldState, controllerState) =
     let knight = worldState.knight
     let noChange = (worldState, controllerState)
-    // get new direction
 
     let walkCommand = getWalkCommand runState
     let direction = match walkCommand with Some dir -> dir | None -> knight.direction
 
     match knight.verticalSpeed with
     | Some v ->
-        // apply Gravity
-        // check for movement
-        (worldState, controllerState)
+        // TODO apply Gravity
+        let position = 
+            match walkCommand with 
+            | Some dir -> tryWalk dir knight.position worldState.blocks
+            | None -> knight.position
+
+        let newKnight = 
+            { knight with 
+                position = position
+                direction = direction
+                state = Walking }
+
+        { worldState with knight = newKnight }, controllerState
     | None ->
         if isStriking knight runState controllerState then
             noChange
         else
-            // check for new strike, jump or block
-            // else walk
-            // else stand
+            // TODO check for new strike, jump or block
+            let (position, state) = 
+                match walkCommand with
+                | Some dir -> tryWalk dir knight.position worldState.blocks, Walking
+                | None -> knight.position, Standing
 
-    let (newDirection, newPosition) = 
-        (knight.direction, knight.position)
-        |> checkForJumpAndFall commands worldState.blocks 
-        |> checkForWalk commands worldState.blocks 
+            let newKnight = 
+                { knight with 
+                    position = position
+                    direction = direction
+                    state = state }
 
-    // if airborne then rise/fall
-        // check collision
-    // if striking continue
-    // if blocking block
-    // gather commands: walking/jumping or striking
-        // check collision
-    let newKnight = 
-        { knight with
-            direction = newDirection
-            position = newPosition }
-    { worldState with knight = newKnight }, controllerState
+            { worldState with knight = newKnight }, controllerState
 
 let handlePlayingState runState worldState controllerState =
     (worldState, controllerState)
