@@ -130,8 +130,8 @@ let checkForJumpAndFall commands blocks (knightDirection, knightPosition) =
     (knightDirection, knightPosition)
 
 let checkForWalk commands blocks (knightDirection, knightPosition) =
-    if List.contains WalkLeft commands then Left, tryWalk Left knightPosition blocks
-    else if List.contains WalkRight commands then Right, tryWalk Right knightPosition blocks
+    if List.contains WalkLeft commands then Left, knightPosition
+    else if List.contains WalkRight commands then Right, knightPosition
     else knightDirection, knightPosition
 
 let processKnight runState (worldState, controllerState) =
