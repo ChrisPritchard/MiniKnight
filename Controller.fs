@@ -134,9 +134,36 @@ let checkForWalk commands blocks (knightDirection, knightPosition) =
     else if List.contains WalkRight commands then Right, knightPosition
     else knightDirection, knightPosition
 
+let getWalkCommand (runState: RunState) =
+    let left = if runState.IsAnyPressed [Keys.A;Keys.Left] then Some Left else None
+    let right = if runState.IsAnyPressed [Keys.D;Keys.Right] then Some Right else None
+    match [left;right] |> List.choose id with
+    | [dir] -> Some dir
+    | _ -> None
+
+let isStriking knight runState controllerState =
+    knight.state = Striking && runState.elapsed - controllerState.lastAttackTime < timeForAttacks
+
 let processKnight runState (worldState, controllerState) =
     let knight = worldState.knight
-    let commands = getCommands runState
+    let noChange = (worldState, controllerState)
+    // get new direction
+
+    let walkCommand = getWalkCommand runState
+    let direction = match walkCommand with Some dir -> dir | None -> knight.direction
+
+    match knight.verticalSpeed with
+    | Some v ->
+        // apply Gravity
+        // check for movement
+        (worldState, controllerState)
+    | None ->
+        if isStriking knight runState controllerState then
+            noChange
+        else
+            // check for new strike, jump or block
+            // else walk
+            // else stand
 
     let (newDirection, newPosition) = 
         (knight.direction, knight.position)
