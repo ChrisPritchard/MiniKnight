@@ -23,13 +23,15 @@ let tryApplyVelocity verticalSpeed (x, y) blocks =
 
     if verticalSpeed < 0. then
         let ceiling = blocks |> List.tryFind (fun (x, y, _) ->
-            x = int (floor nx) && y = int (ceil ny))
+            (x = int (floor nx) || x = int (ceil nx)) && 
+            y = int (ceil ny) - 1)
         match ceiling with
         | None -> (nx, ny), Some verticalSpeed
-        | Some (_, y, _) -> (nx, float y), Some 0.
+        | Some (_, y, _) -> (nx, float y + 1.), Some 0.
     else
         let floor = blocks |> List.tryFind (fun (x, y, _) ->
-            x = int (floor nx) && y = int (floor ny))
+            (x = int (floor nx) || x = int (ceil nx)) && 
+            y = int (floor ny))
         match floor with
         | None -> (nx, ny), Some verticalSpeed
         | Some (_, y, _) -> (nx, float y - 1.), None
