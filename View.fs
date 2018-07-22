@@ -2,12 +2,14 @@ module View
 
 open GameCore
 open Model
+open Microsoft.Xna.Framework
 
 let animSpeed = 200.
 let screenWidth, screenHeight = 800, 600
 let blockWidth, blockHeight = 40, 40
 
 let assetsToLoad = [
+    Font ("default", "Content/coders_crux")
     Texture ("background", "./Content/Sprites/background.png")
     TextureMap ("knight", "./Content/Sprites/knight.png", "./Content/Sprites/knight-key.csv")
     TextureMap ("orc", "./Content/Sprites/orc.png", "./Content/Sprites/orc-key.csv")
@@ -106,6 +108,7 @@ let getPlayingView runState worldState lastStrikeTime =
         let frame = getKnightFrame worldState.knight elapsed lastStrikeTime
         let rect = getKnightRect frame
         yield MappedImage ("knight", frame, rect)
+        yield ColouredText (Color.White, "default", sprintf "%f, %f" <|| worldState.knight.position, (20,20), TopLeft, 1.)
     } |> Seq.toList
 
 let getView runState model =

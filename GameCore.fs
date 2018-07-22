@@ -15,20 +15,12 @@ type Loadable =
 
 type Origin = | TopLeft | Centre
 
-type DrawTextInfo = {
-    assetKey: string
-    text: string
-    position: int * int
-    origin: Origin
-    scale: float
-}
-
 type ViewArtifact = 
 | Image of assetKey:string * destRect: (int*int*int*int)
 | ColouredImage of assetKey:string * destRect: (int*int*int*int) * color:Color
 | MappedImage of assetKey:string * mapKey:string * destRect: (int*int*int*int)
-| Text of DrawTextInfo
-| ColouredText of Color * DrawTextInfo
+| Text of assetKey:string * text:string * position:(int*int) * origin:Origin * scale:float
+| ColouredText of Color * assetKey:string * text:string * position:(int*int) * origin:Origin * scale:float
 | SoundEffect of string
 
 type Resolution =
@@ -123,21 +115,21 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
         | None -> sprintf "Missing asset: %s" assetKey |> failwith
         | _-> sprintf "Asset was not a Texture2D: %s" assetKey |> failwith
     
-    let drawText (spriteBatch: SpriteBatch) text colour =
+    let drawText (spriteBatch: SpriteBatch) (assetKey, (text:string), position, origin, scale) colour =
         let font =
-            match Map.tryFind text.assetKey assets with
+            match Map.tryFind assetKey assets with
             | Some (FontAsset f) -> f
-            | None -> sprintf "Missing asset: %s" text.assetKey |> failwith
-            | _-> sprintf "Asset was not a SpriteFont: %s" text.assetKey |> failwith
+            | None -> sprintf "Missing asset: %s" assetKey |> failwith
+            | _-> sprintf "Asset was not a SpriteFont: %s" assetKey |> failwith
         let position =
-            match text.origin with
-            | TopLeft -> asVector2 text.position
+            match origin with
+            | TopLeft -> asVector2 position
             | Centre -> 
-                let size = Vector2.Divide (font.MeasureString(text.text), 2.f / float32 text.scale)
-                Vector2.Subtract (asVector2 text.position, size)
+                let size = Vector2.Divide (font.MeasureString(text), 2.f / float32 scale)
+                Vector2.Subtract (asVector2 position, size)
         spriteBatch.DrawString(
-            font, text.text, position, colour, 
-            0.0f, Vector2.Zero, float32 text.scale, SpriteEffects.None, 0.5f)
+            font, text, position, colour, 
+            0.0f, Vector2.Zero, float32 scale, SpriteEffects.None, 0.5f)
 
     let playSound assetKey =
         let sound = 
@@ -197,8 +189,8 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
                 | Image (a,d) -> drawImage spriteBatch (a,d) Color.White
                 | ColouredImage (a,d,c) -> drawImage spriteBatch (a,d) c
                 | MappedImage (a,m,d) -> drawMappedImage spriteBatch (a,m,d) Color.White
-                | Text t -> drawText spriteBatch t Color.Black
-                | ColouredText (c,t) -> drawText spriteBatch t c
+                | Text (a,t,p,o,s) -> drawText spriteBatch (a,t,p,o,s) Color.Black
+                | ColouredText (c,a,t,p,o,s) -> drawText spriteBatch (a,t,p,o,s) c
                 | SoundEffect s -> playSound s)
 
         spriteBatch.End()
