@@ -20,18 +20,20 @@ let blockKeys = [Keys.LeftAlt;Keys.RightAlt]
 
 let tryApplyVelocity verticalSpeed (x, y) blocks =
     let (nx, ny) = (x, y + verticalSpeed)
+    let (floorx, ceilx, floory, ceily) = 
+        int (floor nx), int (ceil nx), int (floor ny), int (ceil ny)
 
     if verticalSpeed < 0. then
         let ceiling = blocks |> List.tryFind (fun (x, y, _) ->
-            (x = int (floor nx) || x = int (ceil nx)) && 
-            y = int (ceil ny) - 1)
+            (x = floorx || x = ceilx) && 
+            y = ceily - 1)
         match ceiling with
         | None -> (nx, ny), Some verticalSpeed
         | Some (_, y, _) -> (nx, float y + 1.), Some 0.
     else
         let floor = blocks |> List.tryFind (fun (x, y, _) ->
-            (x = int (floor nx) || x = int (ceil nx)) && 
-            y = int (floor ny + 1.))
+            (x = floorx || x = ceilx) && 
+            y = floory + 1)
         match floor with
         | None -> (nx, ny), Some verticalSpeed
         | Some (_, y, _) -> (nx, float y - 1.), None
@@ -93,19 +95,19 @@ let processKnight runState (worldState, controllerState) =
         | None ->
             if isStriking knight runState controllerState then
                 noChange
-            else if canStrike runState controllerState && runState.IsAnyPressed strikeKeys then
+            else if strikeKeys |> runState.IsAnyPressed && canStrike runState controllerState then
                 let newKnight = 
                     { knight with 
                         direction = direction
                         state = Striking }
                 { worldState with knight = newKnight }, { controllerState with lastStrikeTime = runState.elapsed }
-            else if runState.IsAnyPressed blockKeys then
+            else if blockKeys |> runState.IsAnyPressed then
                 let newKnight = 
                     { knight with 
                         direction = direction
                         state = Blocking }
                 { worldState with knight = newKnight }, controllerState
-            else if runState.WasAnyJustPressed jumpKeys then
+            else if jumpKeys |> runState.WasAnyJustPressed then
                 let newKnight = 
                     { knight with 
                         direction = direction
