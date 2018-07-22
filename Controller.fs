@@ -19,7 +19,7 @@ let strikeKeys = [Keys.LeftControl;Keys.RightControl]
 let blockKeys = [Keys.LeftAlt;Keys.RightAlt]
 
 let tryApplyVelocity verticalSpeed (x, y) blocks =
-    let (nx, ny) = (x, y + verticalSpeed)
+    let ny = y + verticalSpeed
     let (floory, ceily) = int (floor ny), int (ceil ny)
     let isInVertical bx =
         let bx = float bx
@@ -31,25 +31,36 @@ let tryApplyVelocity verticalSpeed (x, y) blocks =
         let ceiling = blocks |> List.tryFind (fun (bx, by, _) ->
             isInVertical bx && by = ceily - 1)
         match ceiling with
-        | None -> (nx, ny), Some verticalSpeed
-        | Some (_, by, _) -> (nx, float by + 1.), Some 0.
+        | None -> (x, ny), Some verticalSpeed
+        | Some (_, by, _) -> (x, float by + 1.), Some 0.
     else
         let floor = blocks |> List.tryFind (fun (bx, by, _) ->
             isInVertical bx && by = floory + 1)
         match floor with
-        | None -> (nx, ny), Some verticalSpeed
-        | Some (_, by, _) -> (nx, float by - 1.), None
+        | None -> (x, ny), Some verticalSpeed
+        | Some (_, by, _) -> (x, float by - 1.), None
 
 let tryWalk direction (x, y) blocks =
-    let newX = if direction = Left then x - walkSpeed else x + walkSpeed
-    let wall = blocks |> List.tryFind (fun (bx, by, _) -> 
-        float by = y && 
-        (if direction = Left then 
-            float bx = floor x else 
-            float bx = ceil x))
-    match wall with 
-    | Some _ -> (x, y) 
-    | None -> (newX, y)
+    let nx = if direction = Left then x - walkSpeed else x + walkSpeed
+    let (floorx, ceilx) = int (floor nx), int (ceil nx)
+    let isHorizontal by =
+        let by = float by
+        by = y ||
+        (by < y && (by + 1.) > y) ||
+        (by > x && (by - 1.) < y)
+
+    if direction = Left then
+        let wall = blocks |> List.tryFind (fun (bx, by, _) ->
+            isHorizontal by && bx + 1 = ceilx)
+        match wall with
+        | Some (bx, _, _) -> (float bx + 1., y)
+        | None -> (nx, y)
+    else
+        let wall = blocks |> List.tryFind (fun (bx, by, _) ->
+            isHorizontal by && bx - 1 = floorx)
+        match wall with
+        | Some (bx, _, _) -> (float bx - 1., y)
+        | None -> (nx, y)
 
 let getWalkCommand (runState: RunState) =
     let left = if runState.IsAnyPressed walkLeftKeys then Some Left else None
