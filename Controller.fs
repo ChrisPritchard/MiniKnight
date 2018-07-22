@@ -139,8 +139,11 @@ let getWalkCommand (runState: RunState) =
     | [dir] -> Some dir
     | _ -> None
 
+let canStrike runState controllerState = 
+    runState.elapsed - controllerState.lastAttackTime >= timeForAttacks
+
 let isStriking knight runState controllerState =
-    knight.state = Striking && runState.elapsed - controllerState.lastAttackTime < timeForAttacks
+    knight.state = Striking && not <| canStrike runState controllerState
 
 let processKnight runState (worldState, controllerState) =
     let knight = worldState.knight
@@ -167,8 +170,26 @@ let processKnight runState (worldState, controllerState) =
     | None ->
         if isStriking knight runState controllerState then
             noChange
+        else if canStrike runState controllerState && runState.IsAnyPressed strikeKeys then
+            let newKnight = 
+                { knight with 
+                    direction = direction
+                    state = Striking }
+            { worldState with knight = newKnight }, { controllerState with lastAttackTime = runState.elapsed }
+        else if runState.IsAnyPressed blockKeys then
+            let newKnight = 
+                { knight with 
+                    direction = direction
+                    state = Blocking }
+            { worldState with knight = newKnight }, controllerState
+        else if runState.IsAnyPressed jumpKeys then
+            let newKnight = 
+                { knight with 
+                    direction = direction
+                    verticalSpeed = Some jumpSpeed
+                    state = Walking }
+            { worldState with knight = newKnight }, controllerState
         else
-            // TODO check for new strike, jump or block
             let (position, state) = 
                 match walkCommand with
                 | Some dir -> tryWalk dir knight.position worldState.blocks, Walking
@@ -185,10 +206,6 @@ let processKnight runState (worldState, controllerState) =
 let handlePlayingState runState worldState controllerState =
     (worldState, controllerState)
     |> processKnight runState
-    // |> checkForFallingPosChange runState
-    // |> checkForDirectionChange runState
-    // |> checkForStateChange runState
-    // |> checkForWalkingPosChange runState
     |> Playing |> Some
 
 let advanceGame (runState : RunState) =
