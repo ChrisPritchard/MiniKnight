@@ -31,7 +31,7 @@ let tryApplyVelocity verticalSpeed (x, y) blocks =
     else
         let floor = blocks |> List.tryFind (fun (x, y, _) ->
             (x = int (floor nx) || x = int (ceil nx)) && 
-            y = int (floor ny))
+            y = int (floor ny + 1.))
         match floor with
         | None -> (nx, ny), Some verticalSpeed
         | Some (_, y, _) -> (nx, float y - 1.), None
@@ -80,40 +80,51 @@ let processKnight runState (worldState, controllerState) =
 
         { worldState with knight = newKnight }, controllerState
     | None ->
-        if isStriking knight runState controllerState then
-            noChange
-        else if canStrike runState controllerState && runState.IsAnyPressed strikeKeys then
+        let (_,gravityEffect) = tryApplyVelocity gravityStrength knight.position worldState.blocks
+        match gravityEffect with
+        | Some v ->
             let newKnight = 
                 { knight with 
+                    position = knight.position
                     direction = direction
-                    state = Striking }
-            { worldState with knight = newKnight }, { controllerState with lastStrikeTime = runState.elapsed }
-        else if runState.IsAnyPressed blockKeys then
-            let newKnight = 
-                { knight with 
-                    direction = direction
-                    state = Blocking }
-            { worldState with knight = newKnight }, controllerState
-        else if runState.WasAnyJustPressed jumpKeys then
-            let newKnight = 
-                { knight with 
-                    direction = direction
-                    verticalSpeed = Some jumpSpeed
+                    verticalSpeed = Some v
                     state = Walking }
             { worldState with knight = newKnight }, controllerState
-        else
-            let (position, state) = 
-                match walkCommand with
-                | Some dir -> tryWalk dir knight.position worldState.blocks, Walking
-                | None -> knight.position, Standing
+        | None ->
+            if isStriking knight runState controllerState then
+                noChange
+            else if canStrike runState controllerState && runState.IsAnyPressed strikeKeys then
+                let newKnight = 
+                    { knight with 
+                        direction = direction
+                        state = Striking }
+                { worldState with knight = newKnight }, { controllerState with lastStrikeTime = runState.elapsed }
+            else if runState.IsAnyPressed blockKeys then
+                let newKnight = 
+                    { knight with 
+                        direction = direction
+                        state = Blocking }
+                { worldState with knight = newKnight }, controllerState
+            else if runState.WasAnyJustPressed jumpKeys then
+                let newKnight = 
+                    { knight with 
+                        direction = direction
+                        verticalSpeed = Some jumpSpeed
+                        state = Walking }
+                { worldState with knight = newKnight }, controllerState
+            else
+                let (position, state) = 
+                    match walkCommand with
+                    | Some dir -> tryWalk dir knight.position worldState.blocks, Walking
+                    | None -> knight.position, Standing
 
-            let newKnight = 
-                { knight with 
-                    position = position
-                    direction = direction
-                    state = state }
+                let newKnight = 
+                    { knight with 
+                        position = position
+                        direction = direction
+                        state = state }
 
-            { worldState with knight = newKnight }, controllerState
+                { worldState with knight = newKnight }, controllerState
 
 let handlePlayingState runState worldState controllerState =
     (worldState, controllerState)
