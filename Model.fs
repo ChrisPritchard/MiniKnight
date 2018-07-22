@@ -33,17 +33,10 @@ and Knight = {
     score: int
 }
 and ControllerState = { 
-    lastCommandTime:float
-    lastAttackTime:float
+    lastStrikeTime:float
     lastMovementTime:float 
     lastGravityTime:float
 }
-
-type WorldState with 
-    member __.withKnightDirection direction = { __ with knight = { __.knight with direction = direction } }
-    member __.withKnightPosition position = { __ with knight = { __.knight with position = position } }
-    member __.withKnightState state = { __ with knight = { __.knight with state = state } }
-    member __.withKnightFallSpeed speed = { __ with knight = { __.knight with verticalSpeed = speed } }
 
 let validAdjacents = 
     [
@@ -95,5 +88,5 @@ let getLevelModel levelMapTiles =
                 score = 0
             }
         },
-        { lastCommandTime = 0.; lastAttackTime = 0.; lastMovementTime = 0.; lastGravityTime = 0. }
+        { lastStrikeTime = 0.; lastMovementTime = 0.; lastGravityTime = 0. }
     )

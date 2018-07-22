@@ -4,8 +4,7 @@ open GameCore
 open Model
 open Microsoft.Xna.Framework.Input
 
-let timeBetweenCommands = 100.
-let timeForAttacks = 200.
+let timeForStrikes = 200.
 let timeBetweenMovement = 25.
 let timeBetweenGravity = 25.
 let walkSpeed = 0.15
@@ -140,7 +139,7 @@ let getWalkCommand (runState: RunState) =
     | _ -> None
 
 let canStrike runState controllerState = 
-    runState.elapsed - controllerState.lastAttackTime >= timeForAttacks
+    runState.elapsed - controllerState.lastStrikeTime >= timeForStrikes
 
 let isStriking knight runState controllerState =
     knight.state = Striking && not <| canStrike runState controllerState
@@ -175,7 +174,7 @@ let processKnight runState (worldState, controllerState) =
                 { knight with 
                     direction = direction
                     state = Striking }
-            { worldState with knight = newKnight }, { controllerState with lastAttackTime = runState.elapsed }
+            { worldState with knight = newKnight }, { controllerState with lastStrikeTime = runState.elapsed }
         else if runState.IsAnyPressed blockKeys then
             let newKnight = 
                 { knight with 
