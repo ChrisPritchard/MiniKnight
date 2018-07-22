@@ -75,6 +75,21 @@ let getKnightFrame (knight : Knight) elapsed =
     | Dying -> numberedFrame 10 19 5
     | Dead -> byDir "deadleft2" "deadright2"
 
+let getKnightRect frame = 
+    let strikeWidth = float blockWidth * 1.5 |> int
+    let blockingWidth = float blockWidth * 0.8 |> int
+    match frame with
+    | "MiniKnight_25" ->
+        (centreX - (strikeWidth - blockWidth), centreY, strikeWidth, blockHeight)
+    | "MiniKnight_27" ->
+        (centreX, centreY, strikeWidth, blockHeight)
+    | "guardleft1" ->
+        (centreX, centreY, blockingWidth, blockHeight)
+    | "guardright1" ->
+        (centreX + (blockWidth - blockingWidth), centreY, blockingWidth, blockHeight)
+    | _ -> 
+        (centreX, centreY, blockWidth, blockHeight)
+
 let getPlayingView (runState : RunState) (state : WorldState) =
     let elapsed = runState.elapsed
     let knightPos = state.knight.position
@@ -85,7 +100,10 @@ let getPlayingView (runState : RunState) (state : WorldState) =
         yield! coins knightPos elapsed state.coins
         yield portal knightPos elapsed true state.entryPortal
         yield portal knightPos elapsed false state.exitPortal
-        yield MappedImage ("knight", getKnightFrame state.knight elapsed, (centreX, centreY, blockWidth, blockHeight))
+         
+        let frame = getKnightFrame state.knight elapsed
+        let rect = getKnightRect frame
+        yield MappedImage ("knight", frame, rect)
     } |> Seq.toList
 
 let getView runState model =
