@@ -1,4 +1,4 @@
-module Controller
+module KnightController
 
 open GameCore
 open Model
@@ -145,18 +145,3 @@ let processKnight runState (worldState, controllerState) =
                         state = state }
 
                 { worldState with knight = newKnight }, controllerState
-
-let handlePlayingState runState worldState controllerState =
-    (worldState, controllerState)
-    |> processKnight runState
-    |> Playing |> Some
-
-let advanceGame (runState : RunState) =
-    function
-    | None -> MapLoader.getLevel 1 |> getLevelModel |> Some 
-    | _ when runState.WasJustPressed Keys.Escape -> None
-    | Some model -> 
-        match model with
-        | Playing (worldState, controllerState) -> 
-            handlePlayingState runState worldState controllerState
-        | _ -> Some model

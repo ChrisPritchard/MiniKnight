@@ -10,7 +10,9 @@
     <Compile Include="Model.fs" />
     <Compile Include="View.fs" />
     <Compile Include="MapLoader.fs" />
-    <Compile Include="Controller.fs" />
+    <Compile Include="CollisionDetection.fs" />
+    <Compile Include="KnightController.fs" />
+    <Compile Include="GameController.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
