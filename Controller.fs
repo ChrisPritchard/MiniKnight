@@ -5,12 +5,12 @@ open Model
 open Microsoft.Xna.Framework.Input
 
 let timeForStrikes = 400.
-let timeBetweenMovement = 25.
-let timeBetweenGravity = 25.
+//let timeBetweenMovement = 25.
+//let timeBetweenGravity = 25.
 let walkSpeed = 0.15
 let jumpSpeed = -0.55
 let gravityStrength = 0.05
-let terminalSpeed = 0.9
+let terminalVelocity = 0.9
 
 let walkLeftKeys = [Keys.A;Keys.Left]
 let walkRightKeys = [Keys.D;Keys.Right]
@@ -125,6 +125,22 @@ let blockKeys = [Keys.LeftAlt;Keys.RightAlt]
 //             worldState,
 //             controllerState
 
+let tryApplyVelocity verticalSpeed (x, y) blocks =
+    let (nx, ny) = (x, y + verticalSpeed)
+
+    if verticalSpeed < 0. then
+        let ceiling = blocks |> List.tryFind (fun (x, y, _) ->
+            x = int (floor nx) && y = int (ceil ny))
+        match ceiling with
+        | None -> (nx, ny), Some verticalSpeed
+        | Some (_, y, _) -> (nx, float y), Some 0.
+    else
+        let floor = blocks |> List.tryFind (fun (x, y, _) ->
+            x = int (floor nx) && y = int (floor ny))
+        match floor with
+        | None -> (nx, ny), Some verticalSpeed
+        | Some (_, y, _) -> (nx, float y - 1.), None
+
 let tryWalk direction (x, y) blocks =
     let newX = if direction = Left then x - walkSpeed else x + walkSpeed
     let blocker = blocks |> List.tryFind (fun (bx, by, _) -> 
@@ -153,16 +169,18 @@ let processKnight runState (worldState, controllerState) =
 
     match knight.verticalSpeed with
     | Some v ->
-        // TODO apply Gravity
-        let position = 
+        let nv = min (v + gravityStrength) terminalVelocity
+        let (positionAfterVertical, verticalSpeed) = tryApplyVelocity nv knight.position worldState.blocks
+        let finalPosition = 
             match walkCommand with 
-            | Some dir -> tryWalk dir knight.position worldState.blocks
-            | None -> knight.position
+            | Some dir -> tryWalk dir positionAfterVertical worldState.blocks
+            | None -> positionAfterVertical
 
         let newKnight = 
             { knight with 
-                position = position
+                position = finalPosition
                 direction = direction
+                verticalSpeed = verticalSpeed
                 state = Walking }
 
         { worldState with knight = newKnight }, controllerState
@@ -181,7 +199,7 @@ let processKnight runState (worldState, controllerState) =
                     direction = direction
                     state = Blocking }
             { worldState with knight = newKnight }, controllerState
-        else if runState.IsAnyPressed jumpKeys then
+        else if runState.WasAnyJustPressed jumpKeys then
             let newKnight = 
                 { knight with 
                     direction = direction

@@ -56,6 +56,7 @@ type RunState = {
     
 type RunState with
     member __.WasJustPressed key = List.contains key __.keyboard.keysDown
+    member __.WasAnyJustPressed keyList = keyList |> List.exists __.WasJustPressed
     member __.IsPressed key = List.contains key __.keyboard.pressed
     member __.IsAnyPressed keyList = keyList |> List.exists __.IsPressed
 
