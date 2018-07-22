@@ -20,29 +20,36 @@ let blockKeys = [Keys.LeftAlt;Keys.RightAlt]
 
 let tryApplyVelocity verticalSpeed (x, y) blocks =
     let (nx, ny) = (x, y + verticalSpeed)
-    let (floorx, ceilx, floory, ceily) = 
-        int (floor nx), int (ceil nx), int (floor ny), int (ceil ny)
+    let (floory, ceily) = int (floor ny), int (ceil ny)
+    let isInVertical bx =
+        let bx = float bx
+        bx = x ||
+        (bx < x && (bx + 1.) > x) ||
+        (bx > x && (bx - 1.) < x)
 
     if verticalSpeed < 0. then
-        let ceiling = blocks |> List.tryFind (fun (x, y, _) ->
-            (x = floorx || x = ceilx) && 
-            y = ceily - 1)
+        let ceiling = blocks |> List.tryFind (fun (bx, by, _) ->
+            isInVertical bx && by = ceily - 1)
         match ceiling with
         | None -> (nx, ny), Some verticalSpeed
-        | Some (_, y, _) -> (nx, float y + 1.), Some 0.
+        | Some (_, by, _) -> (nx, float by + 1.), Some 0.
     else
-        let floor = blocks |> List.tryFind (fun (x, y, _) ->
-            (x = floorx || x = ceilx) && 
-            y = floory + 1)
+        let floor = blocks |> List.tryFind (fun (bx, by, _) ->
+            isInVertical bx && by = floory + 1)
         match floor with
         | None -> (nx, ny), Some verticalSpeed
-        | Some (_, y, _) -> (nx, float y - 1.), None
+        | Some (_, by, _) -> (nx, float by - 1.), None
 
 let tryWalk direction (x, y) blocks =
     let newX = if direction = Left then x - walkSpeed else x + walkSpeed
-    let blocker = blocks |> List.tryFind (fun (bx, by, _) -> 
-        float by = y && (if direction = Left then float bx = floor x else float bx = ceil x))
-    match blocker with Some _ -> (x, y) | None -> (newX, y)
+    let wall = blocks |> List.tryFind (fun (bx, by, _) -> 
+        float by = y && 
+        (if direction = Left then 
+            float bx = floor x else 
+            float bx = ceil x))
+    match wall with 
+    | Some _ -> (x, y) 
+    | None -> (newX, y)
 
 let getWalkCommand (runState: RunState) =
     let left = if runState.IsAnyPressed walkLeftKeys then Some Left else None
