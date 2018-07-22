@@ -4,7 +4,7 @@ open GameCore
 open Model
 open Microsoft.Xna.Framework.Input
 
-let timeForStrikes = 200.
+let timeForStrikes = 400.
 let timeBetweenMovement = 25.
 let timeBetweenGravity = 25.
 let walkSpeed = 0.15

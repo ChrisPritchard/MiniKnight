@@ -60,16 +60,18 @@ let portal knightPos elapsed isEntry (x, y) =
         let frame = sprintf "portal_%i" <| frameFor 2 elapsed
         MappedImage ("portalDepart", frame, destRect)
 
-let getKnightFrame (knight : Knight) elapsed = 
+let getKnightFrame (knight : Knight) elapsed lastStrikeTime = 
     let byDir leftFrame rightFrame = if knight.direction = Left then leftFrame else rightFrame
     let numberedFrame leftStart rightStart maxFrame =
         let frame = (if knight.direction = Left then leftStart else rightStart) + (frameFor maxFrame elapsed)
         sprintf "MiniKnight_%i" frame
-
+    let strikeFrame = 
+        let index = if elapsed - lastStrikeTime < animSpeed then 1 else 0
+        byDir (sprintf "MiniKnight_%i" (24 + index)) (sprintf "MiniKnight_%i" (26 + index))
     match knight.state with
     | Standing -> byDir "standleft1" "standright1"
     | Walking -> numberedFrame 6 15 4
-    | Striking -> numberedFrame 24 26 2
+    | Striking -> strikeFrame
     | Blocking -> byDir "guardleft1" "guardright1"
     | Hit _ -> numberedFrame 2 4 2
     | Dying -> numberedFrame 10 19 5
@@ -90,24 +92,24 @@ let getKnightRect frame =
     | _ -> 
         (centreX, centreY, blockWidth, blockHeight)
 
-let getPlayingView (runState : RunState) (state : WorldState) =
+let getPlayingView runState worldState lastStrikeTime =
     let elapsed = runState.elapsed
-    let knightPos = state.knight.position
+    let knightPos = worldState.knight.position
     seq {
         yield Image ("background", (0,0,screenWidth,screenHeight))
-        yield! blocks knightPos state.blocks
-        yield! spikes knightPos state.spikes
-        yield! coins knightPos elapsed state.coins
-        yield portal knightPos elapsed true state.entryPortal
-        yield portal knightPos elapsed false state.exitPortal
+        yield! blocks knightPos worldState.blocks
+        yield! spikes knightPos worldState.spikes
+        yield! coins knightPos elapsed worldState.coins
+        yield portal knightPos elapsed true worldState.entryPortal
+        yield portal knightPos elapsed false worldState.exitPortal
          
-        let frame = getKnightFrame state.knight elapsed
+        let frame = getKnightFrame worldState.knight elapsed lastStrikeTime
         let rect = getKnightRect frame
         yield MappedImage ("knight", frame, rect)
     } |> Seq.toList
 
 let getView runState model =
     match model with
-    | Playing (state, _) ->
-        getPlayingView runState state
+    | Playing (worldState, controllerState) ->
+        getPlayingView runState worldState controllerState.lastStrikeTime
     | _ -> []
