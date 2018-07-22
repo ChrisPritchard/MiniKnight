@@ -2,6 +2,7 @@ module KnightController
 
 open GameCore
 open Model
+open CollisionDetection
 open Microsoft.Xna.Framework.Input
 
 let timeForStrikes = 400.
@@ -20,46 +21,30 @@ let blockKeys = [Keys.LeftAlt;Keys.RightAlt]
 
 let tryApplyVelocity verticalSpeed (x, y) blocks =
     let ny = y + verticalSpeed
-    let (floory, ceily) = int (floor ny), int (ceil ny)
-    let isInVertical bx =
-        let bx = float bx
-        bx = x ||
-        (bx < x && (bx + 1.) > x) ||
-        (bx > x && (bx - 1.) < x)
-
+    let blocks = blocks |> List.map (fun (bx, by, _) -> (bx, by))
     if verticalSpeed < 0. then
-        let ceiling = blocks |> List.tryFind (fun (bx, by, _) ->
-            isInVertical bx && by = ceily - 1)
+        let ceiling = tryFindCollision North (x, ny) blocks
         match ceiling with
+        | Some (_, by) -> (x, float by + 1.), Some 0.
         | None -> (x, ny), Some verticalSpeed
-        | Some (_, by, _) -> (x, float by + 1.), Some 0.
     else
-        let floor = blocks |> List.tryFind (fun (bx, by, _) ->
-            isInVertical bx && by = floory + 1)
+        let floor = tryFindCollision South (x, ny) blocks
         match floor with
+        | Some (_, by) -> (x, float by - 1.), None
         | None -> (x, ny), Some verticalSpeed
-        | Some (_, by, _) -> (x, float by - 1.), None
 
 let tryWalk direction (x, y) blocks =
     let nx = if direction = Left then x - walkSpeed else x + walkSpeed
-    let (floorx, ceilx) = int (floor nx), int (ceil nx)
-    let isInHorizontal by =
-        let by = float by
-        by = y ||
-        (by < y && (by + 1.) > y) ||
-        (by > x && (by - 1.) < y)
-
+    let blocks = blocks |> List.map (fun (bx, by, _) -> (bx, by))
     if direction = Left then
-        let wall = blocks |> List.tryFind (fun (bx, by, _) ->
-            isInHorizontal by && bx + 1 = ceilx)
+        let wall = tryFindCollision West (nx, y) blocks
         match wall with
-        | Some (bx, _, _) -> (float bx + 1., y)
+        | Some (bx, _) -> (float bx + 1., y)
         | None -> (nx, y)
     else
-        let wall = blocks |> List.tryFind (fun (bx, by, _) ->
-            isInHorizontal by && bx - 1 = floorx)
+        let wall = tryFindCollision East (nx, y) blocks
         match wall with
-        | Some (bx, _, _) -> (float bx - 1., y)
+        | Some (bx, _) -> (float bx - 1., y)
         | None -> (nx, y)
 
 let getWalkCommand (runState: RunState) =
