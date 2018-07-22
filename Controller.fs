@@ -43,7 +43,7 @@ let tryApplyVelocity verticalSpeed (x, y) blocks =
 let tryWalk direction (x, y) blocks =
     let nx = if direction = Left then x - walkSpeed else x + walkSpeed
     let (floorx, ceilx) = int (floor nx), int (ceil nx)
-    let isHorizontal by =
+    let isInHorizontal by =
         let by = float by
         by = y ||
         (by < y && (by + 1.) > y) ||
@@ -51,13 +51,13 @@ let tryWalk direction (x, y) blocks =
 
     if direction = Left then
         let wall = blocks |> List.tryFind (fun (bx, by, _) ->
-            isHorizontal by && bx + 1 = ceilx)
+            isInHorizontal by && bx + 1 = ceilx)
         match wall with
         | Some (bx, _, _) -> (float bx + 1., y)
         | None -> (nx, y)
     else
         let wall = blocks |> List.tryFind (fun (bx, by, _) ->
-            isHorizontal by && bx - 1 = floorx)
+            isInHorizontal by && bx - 1 = floorx)
         match wall with
         | Some (bx, _, _) -> (float bx - 1., y)
         | None -> (nx, y)
