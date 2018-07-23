@@ -62,21 +62,21 @@ let portal knightPos elapsed isEntry (x, y) =
         let frame = sprintf "portal_%i" <| frameFor 2 elapsed
         MappedImage ("portalDepart", frame, destRect)
 
-let getKnightFrame (knight : Knight) elapsed lastStrikeTime = 
+let getKnightFrame (knight : Knight) elapsed = 
     let byDir leftFrame rightFrame = if knight.direction = Left then leftFrame else rightFrame
-    let numberedFrame leftStart rightStart maxFrame =
+    let numberedFrame leftStart rightStart maxFrame elapsed =
         let frame = (if knight.direction = Left then leftStart else rightStart) + (frameFor maxFrame elapsed)
         sprintf "MiniKnight_%i" frame
-    let strikeFrame = 
-        let index = if elapsed - lastStrikeTime < animSpeed then 1 else 0
+    let strikeFrame startTime = 
+        let index = if elapsed - startTime < animSpeed then 1 else 0
         byDir (sprintf "MiniKnight_%i" (24 + index)) (sprintf "MiniKnight_%i" (26 + index))
     match knight.state with
     | Standing -> byDir "standleft1" "standright1"
-    | Walking -> numberedFrame 6 15 4
-    | Striking -> strikeFrame
+    | Walking -> numberedFrame 6 15 4 elapsed
+    | Striking t -> strikeFrame t
     | Blocking -> byDir "guardleft1" "guardright1"
-    | Hit _ -> numberedFrame 2 4 2
-    | Dying -> numberedFrame 10 19 5
+    | Hit t -> numberedFrame 2 4 2 (elapsed - t)
+    | Dying t -> numberedFrame 10 19 5 (elapsed - t)
     | Dead -> byDir "deadLeft2" "deadRight2"
 
 let getKnightRect frame = 
@@ -94,7 +94,7 @@ let getKnightRect frame =
     | _ -> 
         (centreX, centreY, blockWidth, blockHeight)
 
-let getPlayingView runState worldState lastStrikeTime =
+let getPlayingView runState worldState =
     let elapsed = runState.elapsed
     let knightPos = worldState.knight.position
     seq {
@@ -105,7 +105,7 @@ let getPlayingView runState worldState lastStrikeTime =
         yield portal knightPos elapsed true worldState.entryPortal
         yield portal knightPos elapsed false worldState.exitPortal
          
-        let frame = getKnightFrame worldState.knight elapsed lastStrikeTime
+        let frame = getKnightFrame worldState.knight elapsed
         let rect = getKnightRect frame
         yield MappedImage ("knight", frame, rect)
         yield ColouredText (Color.White, "default", sprintf "%f, %f" <|| worldState.knight.position, (20,20), TopLeft, 1.)
@@ -113,6 +113,6 @@ let getPlayingView runState worldState lastStrikeTime =
 
 let getView runState model =
     match model with
-    | Playing (worldState, controllerState) ->
-        getPlayingView runState worldState controllerState.lastStrikeTime
+    | Playing (worldState, _) ->
+        getPlayingView runState worldState
     | _ -> []

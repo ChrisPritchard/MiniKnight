@@ -55,12 +55,6 @@ let getWalkCommand (runState: RunState) =
     | [dir] -> Some dir
     | _ -> None
 
-let canStrike runState controllerState = 
-    runState.elapsed - controllerState.lastStrikeTime >= timeForStrikes
-
-let isStriking knight runState controllerState =
-    knight.state = Striking && not <| canStrike runState controllerState
-
 let processInAir velocity runState (worldState, controllerState) = 
     let knight = worldState.knight
     let walkCommand = getWalkCommand runState
@@ -79,19 +73,18 @@ let processInAir velocity runState (worldState, controllerState) =
             position = finalPosition
             direction = direction
             verticalSpeed = verticalSpeed
-            state = match hasHitSpikes with Some _ -> Dying | _ -> Walking
-            timeOfDeath = match hasHitSpikes with Some _ -> Some runState.elapsed | _ -> None }
+            state = 
+                match hasHitSpikes with 
+                | Some _ -> Dying runState.elapsed 
+                | _ -> Walking }
 
     { worldState with knight = newKnight }, controllerState
 
-let processOnGround runState (worldState, controllerState) =
+let processOnGround (runState: RunState) (worldState, controllerState) =
     let knight = worldState.knight
-    
-    if isStriking knight runState controllerState then
-        (worldState, controllerState)
-    else if strikeKeys |> runState.IsAnyPressed && canStrike runState controllerState then
-        let newKnight = { knight with  state = Striking }
-        { worldState with knight = newKnight }, { controllerState with lastStrikeTime = runState.elapsed }
+    if strikeKeys |> runState.IsAnyPressed then
+        let newKnight = { knight with  state = Striking runState.elapsed }
+        { worldState with knight = newKnight }, controllerState
     else 
         let walkCommand = getWalkCommand runState
         let direction = match walkCommand with Some dir -> dir | None -> knight.direction
@@ -123,13 +116,19 @@ let processOnGround runState (worldState, controllerState) =
 
 let processKnight runState (worldState, controllerState) =
     let knight = worldState.knight
-    match knight.timeOfDeath with
-    | Some t ->
-        if runState.elapsed - t < timeForDying then
-            { worldState with knight = { worldState.knight with state = Dying } }, controllerState
-        else
-            { worldState with knight = { worldState.knight with state = Dead } }, controllerState
-    | None ->
+    match knight.state with
+    | Dead ->
+        worldState, controllerState
+    | Dying t when runState.elapsed - t < timeForDying ->
+        worldState, controllerState
+    | Dying _ ->
+        { worldState with knight = { worldState.knight with state = Dead } }, controllerState
+    | Striking t when runState.elapsed - t < timeForStrikes ->
+        worldState, controllerState
+    | Striking _ ->
+        let newKnight = { knight with state = Standing }
+        { worldState with knight = newKnight }, controllerState
+    | _ ->
         match knight.verticalSpeed with
         | Some velocity ->
             processInAir velocity runState (worldState, controllerState)

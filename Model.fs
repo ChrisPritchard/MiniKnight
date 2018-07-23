@@ -21,8 +21,8 @@ and Orc = {
     health: int
 }
 and EntityState = 
-    | Standing | Walking | Striking | Blocking 
-    | Hit of startTime:float | Dying | Dead
+    | Standing | Walking | Striking of startTime:float | Blocking 
+    | Hit of startTime:float | Dying of startTime:float | Dead
 and Direction = | Left | Right
 and Knight = {
     position: float * float
@@ -30,11 +30,9 @@ and Knight = {
     direction: Direction
     verticalSpeed: float option
     health: int
-    timeOfDeath: float option
     score: int
 }
 and ControllerState = { 
-    lastStrikeTime:float
     lastMovementTime:float 
     lastGravityTime:float
 }
@@ -86,9 +84,8 @@ let getLevelModel levelMapTiles =
                 direction = Right
                 verticalSpeed = None
                 health = 3
-                timeOfDeath = None
                 score = 0
             }
         },
-        { lastStrikeTime = 0.; lastMovementTime = 0.; lastGravityTime = 0. }
+        { lastMovementTime = 0.; lastGravityTime = 0. }
     )
