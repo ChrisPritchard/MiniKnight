@@ -113,6 +113,6 @@ let getPlayingView runState worldState =
 
 let getView runState model =
     match model with
-    | Playing (worldState, _) ->
+    | Playing worldState ->
         getPlayingView runState worldState
     | _ -> []

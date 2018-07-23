@@ -55,7 +55,7 @@ let getWalkCommand (runState: RunState) =
     | [dir] -> Some dir
     | _ -> None
 
-let processInAir velocity runState (worldState, controllerState) = 
+let processInAir velocity runState worldState = 
     let knight = worldState.knight
     let walkCommand = getWalkCommand runState
     let direction = match walkCommand with Some dir -> dir | None -> knight.direction
@@ -78,13 +78,13 @@ let processInAir velocity runState (worldState, controllerState) =
                 | Some _ -> Dying runState.elapsed 
                 | _ -> Walking }
 
-    { worldState with knight = newKnight }, controllerState
+    { worldState with knight = newKnight }
 
-let processOnGround (runState: RunState) (worldState, controllerState) =
+let processOnGround (runState: RunState) worldState =
     let knight = worldState.knight
     if strikeKeys |> runState.IsAnyPressed then
         let newKnight = { knight with  state = Striking runState.elapsed }
-        { worldState with knight = newKnight }, controllerState
+        { worldState with knight = newKnight }
     else 
         let walkCommand = getWalkCommand runState
         let direction = match walkCommand with Some dir -> dir | None -> knight.direction
@@ -94,14 +94,14 @@ let processOnGround (runState: RunState) (worldState, controllerState) =
                 { knight with 
                     direction = direction
                     state = Blocking }
-            { worldState with knight = newKnight }, controllerState
+            { worldState with knight = newKnight }
         else if jumpKeys |> runState.WasAnyJustPressed then
             let newKnight = 
                 { knight with 
                     direction = direction
                     verticalSpeed = Some jumpSpeed
                     state = Walking }
-            { worldState with knight = newKnight }, controllerState
+            { worldState with knight = newKnight }
         else
             let (position, state) = 
                 match walkCommand with
@@ -112,31 +112,31 @@ let processOnGround (runState: RunState) (worldState, controllerState) =
                     position = position
                     direction = direction
                     state = state }
-            { worldState with knight = newKnight }, controllerState
+            { worldState with knight = newKnight }
 
-let processKnight runState (worldState, controllerState) =
+let processKnight runState worldState =
     let knight = worldState.knight
     match knight.state with
     | Dead ->
-        worldState, controllerState
+        worldState
     | Dying t when runState.elapsed - t < timeForDying ->
-        worldState, controllerState
+        worldState
     | Dying _ ->
-        { worldState with knight = { worldState.knight with state = Dead } }, controllerState
+        { worldState with knight = { worldState.knight with state = Dead } }
     | Striking t when runState.elapsed - t < timeForStrikes ->
-        worldState, controllerState
+        worldState
     | Striking _ ->
         let newKnight = { knight with state = Standing }
-        { worldState with knight = newKnight }, controllerState
+        { worldState with knight = newKnight }
     | _ ->
         match knight.verticalSpeed with
         | Some velocity ->
-            processInAir velocity runState (worldState, controllerState)
+            processInAir velocity runState worldState
         | None ->
             let (_,gravityEffect) = tryApplyVelocity gravityStrength knight.position worldState.blocks
             match gravityEffect with
             | Some v ->
                 let newKnight = { knight with verticalSpeed = Some v }
-                { worldState with knight = newKnight }, controllerState
+                { worldState with knight = newKnight }
             | None ->
-                processOnGround runState (worldState, controllerState)
+                processOnGround runState worldState

@@ -2,7 +2,7 @@ module Model
 
 type GameModel = 
     | Menu
-    | Playing of WorldState * ControllerState
+    | Playing of WorldState
     | GameOver of score:int
 and WorldState = {
     blocks: (int * int * string) list
@@ -31,10 +31,6 @@ and Knight = {
     verticalSpeed: float option
     health: int
     score: int
-}
-and ControllerState = { 
-    lastMovementTime:float 
-    lastGravityTime:float
 }
 
 let validAdjacents = 
@@ -68,24 +64,20 @@ let getLevelModel levelMapTiles =
         x, y, adjacencyKey (x, y) blocks)
     
     let entryPortal = oneKind EntryPortal (0,0)
-    Playing 
-    <| (
-        { 
-            blocks = adjacencyMapped
-            spikes = ofKind Spikes
-            coins = ofKind Coin
-            orcs = []
-            entryPortal = entryPortal
-            exitPortal = oneKind ExitPortal (0,0)
-            knight = 
-            {
-                position = entryPortal |> (fun (x, y) -> float x, float y)
-                state = Standing
-                direction = Right
-                verticalSpeed = None
-                health = 3
-                score = 0
-            }
-        },
-        { lastMovementTime = 0.; lastGravityTime = 0. }
-    )
+    Playing { 
+        blocks = adjacencyMapped
+        spikes = ofKind Spikes
+        coins = ofKind Coin
+        orcs = []
+        entryPortal = entryPortal
+        exitPortal = oneKind ExitPortal (0,0)
+        knight = 
+        {
+            position = entryPortal |> (fun (x, y) -> float x, float y)
+            state = Standing
+            direction = Right
+            verticalSpeed = None
+            health = 3
+            score = 0
+        }
+    }

@@ -4,8 +4,8 @@ open GameCore
 open Model
 open Microsoft.Xna.Framework.Input
 
-let handlePlayingState runState worldState controllerState =
-    (worldState, controllerState)
+let handlePlayingState runState worldState =
+    worldState
     |> KnightController.processKnight runState
     |> Playing |> Some
 
@@ -15,6 +15,6 @@ let advanceGame (runState : RunState) =
     | _ when runState.WasJustPressed Keys.Escape -> None
     | Some model -> 
         match model with
-        | Playing (worldState, controllerState) -> 
-            handlePlayingState runState worldState controllerState
+        | Playing worldState -> 
+            handlePlayingState runState worldState
         | _ -> Some model
