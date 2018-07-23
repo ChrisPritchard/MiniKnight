@@ -11,6 +11,8 @@ let jumpSpeed = -0.55
 let gravityStrength = 0.05
 let terminalVelocity = 0.9
 
+let coinScore = 2
+
 let walkLeftKeys = [Keys.A;Keys.Left]
 let walkRightKeys = [Keys.D;Keys.Right]
 let jumpKeys = [Keys.W;Keys.Space]
@@ -65,17 +67,26 @@ let processInAir velocity runState worldState =
         | None -> positionAfterVertical
 
     let hasHitSpikes = tryFindCollision South finalPosition worldState.spikes
+    let hasHitCoin = tryFindCollision South finalPosition worldState.coins
     let newKnight = 
         { knight with 
             position = finalPosition
             direction = direction
             verticalSpeed = verticalSpeed
+            score =
+                match hasHitCoin with
+                | Some _ -> knight.score + coinScore
+                | _ -> knight.score
             state = 
                 match hasHitSpikes with 
                 | Some _ -> Dying runState.elapsed 
                 | _ -> Walking }
 
-    { worldState with knight = newKnight }
+    let coins = 
+        match hasHitCoin with
+        | Some c -> List.except [c] worldState.coins
+        | _ -> worldState.coins
+    { worldState with knight = newKnight; coins = coins }
 
 let processOnGround (runState: RunState) worldState =
     let knight = worldState.knight
@@ -104,12 +115,24 @@ let processOnGround (runState: RunState) worldState =
                 match walkCommand with
                 | Some dir -> tryWalk dir knight.position worldState.blocks, Walking
                 | None -> knight.position, Standing
+
+            let coinDir = match direction with Left -> West | _ -> East
+            let hasHitCoin = tryFindCollision coinDir knight.position worldState.coins    
             let newKnight = 
                 { knight with 
                     position = position
                     direction = direction
-                    state = state }
-            { worldState with knight = newKnight }
+                    state = state
+                    score =
+                        match hasHitCoin with
+                        | Some _ -> knight.score + coinScore
+                        | _ -> knight.score }
+
+            let coins = 
+                match hasHitCoin with
+                | Some c -> List.except [c] worldState.coins
+                | _ -> worldState.coins
+            { worldState with knight = newKnight; coins = coins }
 
 let processKnight runState worldState =
     let knight = worldState.knight
