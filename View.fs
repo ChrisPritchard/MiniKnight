@@ -8,6 +8,9 @@ let animSpeed = 100.
 let screenWidth, screenHeight = 800, 600
 let blockWidth, blockHeight = 40, 40
 
+let strikeFrames = 2
+let dyingFrames = 5
+
 let assetsToLoad = [
     Font ("default", "Content/coders_crux")
     Texture ("background", "./Content/Sprites/background.png")
@@ -76,7 +79,7 @@ let getKnightFrame (knight : Knight) elapsed =
     | Striking t -> strikeFrame t
     | Blocking -> byDir "guardleft1" "guardright1"
     | Hit t -> numberedFrame 2 4 2 (elapsed - t)
-    | Dying t -> numberedFrame 10 19 5 (elapsed - t)
+    | Dying t -> numberedFrame 10 19 dyingFrames (elapsed - t)
     | Dead -> byDir "deadLeft2" "deadRight2"
 
 let getKnightRect frame = 

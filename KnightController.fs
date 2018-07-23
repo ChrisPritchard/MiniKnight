@@ -6,9 +6,6 @@ open View
 open CollisionDetection
 open Microsoft.Xna.Framework.Input
 
-let timeForStrikes = animSpeed * 2.
-let timeForDying = animSpeed * 5.
-
 let walkSpeed = 0.15
 let jumpSpeed = -0.55
 let gravityStrength = 0.05
@@ -119,11 +116,11 @@ let processKnight runState worldState =
     match knight.state with
     | Dead ->
         worldState
-    | Dying t when runState.elapsed - t < timeForDying ->
+    | Dying t when runState.elapsed - t < (animSpeed * float dyingFrames) ->
         worldState
     | Dying _ ->
         { worldState with knight = { worldState.knight with state = Dead } }
-    | Striking t when runState.elapsed - t < timeForStrikes ->
+    | Striking t when runState.elapsed - t < (animSpeed * float strikeFrames) ->
         worldState
     | Striking _ ->
         let newKnight = { knight with state = Standing }
