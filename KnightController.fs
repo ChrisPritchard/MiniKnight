@@ -2,12 +2,13 @@ module KnightController
 
 open GameCore
 open Model
+open View
 open CollisionDetection
 open Microsoft.Xna.Framework.Input
 
-let timeForStrikes = 200.
-//let timeBetweenMovement = 25.
-//let timeBetweenGravity = 25.
+let timeForStrikes = animSpeed * 2.
+let timeForDying = animSpeed * 5.
+
 let walkSpeed = 0.15
 let jumpSpeed = -0.55
 let gravityStrength = 0.05
@@ -72,12 +73,14 @@ let processInAir velocity runState (worldState, controllerState) =
         | Some dir -> tryWalk dir positionAfterVertical worldState.blocks
         | None -> positionAfterVertical
 
+    let hasHitSpikes = tryFindCollision South finalPosition worldState.spikes
     let newKnight = 
         { knight with 
             position = finalPosition
             direction = direction
             verticalSpeed = verticalSpeed
-            state = Walking }
+            state = match hasHitSpikes with Some _ -> Dying | _ -> Walking
+            timeOfDeath = match hasHitSpikes with Some _ -> Some runState.elapsed | _ -> None }
 
     { worldState with knight = newKnight }, controllerState
 
@@ -120,14 +123,21 @@ let processOnGround runState (worldState, controllerState) =
 
 let processKnight runState (worldState, controllerState) =
     let knight = worldState.knight
-    match knight.verticalSpeed with
-    | Some velocity ->
-        processInAir velocity runState (worldState, controllerState)
+    match knight.timeOfDeath with
+    | Some t ->
+        if runState.elapsed - t < timeForDying then
+            { worldState with knight = { worldState.knight with state = Dying } }, controllerState
+        else
+            { worldState with knight = { worldState.knight with state = Dead } }, controllerState
     | None ->
-        let (_,gravityEffect) = tryApplyVelocity gravityStrength knight.position worldState.blocks
-        match gravityEffect with
-        | Some v ->
-            let newKnight = { knight with verticalSpeed = Some v }
-            { worldState with knight = newKnight }, controllerState
+        match knight.verticalSpeed with
+        | Some velocity ->
+            processInAir velocity runState (worldState, controllerState)
         | None ->
-            processOnGround runState (worldState, controllerState)
+            let (_,gravityEffect) = tryApplyVelocity gravityStrength knight.position worldState.blocks
+            match gravityEffect with
+            | Some v ->
+                let newKnight = { knight with verticalSpeed = Some v }
+                { worldState with knight = newKnight }, controllerState
+            | None ->
+                processOnGround runState (worldState, controllerState)

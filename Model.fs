@@ -30,6 +30,7 @@ and Knight = {
     direction: Direction
     verticalSpeed: float option
     health: int
+    timeOfDeath: float option
     score: int
 }
 and ControllerState = { 
@@ -85,6 +86,7 @@ let getLevelModel levelMapTiles =
                 direction = Right
                 verticalSpeed = None
                 health = 3
+                timeOfDeath = None
                 score = 0
             }
         },

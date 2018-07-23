@@ -77,7 +77,7 @@ let getKnightFrame (knight : Knight) elapsed lastStrikeTime =
     | Blocking -> byDir "guardleft1" "guardright1"
     | Hit _ -> numberedFrame 2 4 2
     | Dying -> numberedFrame 10 19 5
-    | Dead -> byDir "deadleft2" "deadright2"
+    | Dead -> byDir "deadLeft2" "deadRight2"
 
 let getKnightRect frame = 
     let strikeWidth = float blockWidth * 1.5 |> int
