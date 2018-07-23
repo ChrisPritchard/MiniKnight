@@ -116,11 +116,11 @@ let processKnight runState worldState =
     match knight.state with
     | Dead ->
         worldState
-    | Dying t when runState.elapsed - t < (animSpeed * float dyingFrames) ->
+    | Dying startTime when runState.elapsed - startTime < (animSpeed * float dyingFrames) ->
         worldState
     | Dying _ ->
         { worldState with knight = { worldState.knight with state = Dead } }
-    | Striking t when runState.elapsed - t < (animSpeed * float strikeFrames) ->
+    | Striking startTime when runState.elapsed - startTime < (animSpeed * float strikeFrames) ->
         worldState
     | Striking _ ->
         let newKnight = { knight with state = Standing }
