@@ -5,7 +5,7 @@ open Model
 open CollisionDetection
 open Microsoft.Xna.Framework.Input
 
-let timeForStrikes = 400.
+let timeForStrikes = 200.
 //let timeBetweenMovement = 25.
 //let timeBetweenGravity = 25.
 let walkSpeed = 0.15
@@ -60,73 +60,74 @@ let canStrike runState controllerState =
 let isStriking knight runState controllerState =
     knight.state = Striking && not <| canStrike runState controllerState
 
-let processKnight runState (worldState, controllerState) =
+let processInAir velocity runState (worldState, controllerState) = 
     let knight = worldState.knight
-    let noChange = (worldState, controllerState)
-
     let walkCommand = getWalkCommand runState
     let direction = match walkCommand with Some dir -> dir | None -> knight.direction
 
+    let nv = min (velocity + gravityStrength) terminalVelocity
+    let (positionAfterVertical, verticalSpeed) = tryApplyVelocity nv knight.position worldState.blocks
+    let finalPosition = 
+        match walkCommand with 
+        | Some dir -> tryWalk dir positionAfterVertical worldState.blocks
+        | None -> positionAfterVertical
+
+    let newKnight = 
+        { knight with 
+            position = finalPosition
+            direction = direction
+            verticalSpeed = verticalSpeed
+            state = Walking }
+
+    { worldState with knight = newKnight }, controllerState
+
+let processOnGround runState (worldState, controllerState) =
+    let knight = worldState.knight
+    
+    if isStriking knight runState controllerState then
+        (worldState, controllerState)
+    else if strikeKeys |> runState.IsAnyPressed && canStrike runState controllerState then
+        let newKnight = { knight with  state = Striking }
+        { worldState with knight = newKnight }, { controllerState with lastStrikeTime = runState.elapsed }
+    else 
+        let walkCommand = getWalkCommand runState
+        let direction = match walkCommand with Some dir -> dir | None -> knight.direction
+
+        if blockKeys |> runState.IsAnyPressed then
+            let newKnight = 
+                { knight with 
+                    direction = direction
+                    state = Blocking }
+            { worldState with knight = newKnight }, controllerState
+        else if jumpKeys |> runState.WasAnyJustPressed then
+            let newKnight = 
+                { knight with 
+                    direction = direction
+                    verticalSpeed = Some jumpSpeed
+                    state = Walking }
+            { worldState with knight = newKnight }, controllerState
+        else
+            let (position, state) = 
+                match walkCommand with
+                | Some dir -> tryWalk dir knight.position worldState.blocks, Walking
+                | None -> knight.position, Standing
+            let newKnight = 
+                { knight with 
+                    position = position
+                    direction = direction
+                    state = state }
+            { worldState with knight = newKnight }, controllerState
+
+let processKnight runState (worldState, controllerState) =
+    let knight = worldState.knight
     match knight.verticalSpeed with
-    | Some v ->
-        let nv = min (v + gravityStrength) terminalVelocity
-        let (positionAfterVertical, verticalSpeed) = tryApplyVelocity nv knight.position worldState.blocks
-        let finalPosition = 
-            match walkCommand with 
-            | Some dir -> tryWalk dir positionAfterVertical worldState.blocks
-            | None -> positionAfterVertical
-
-        let newKnight = 
-            { knight with 
-                position = finalPosition
-                direction = direction
-                verticalSpeed = verticalSpeed
-                state = Walking }
-
-        { worldState with knight = newKnight }, controllerState
+    | Some velocity ->
+        processInAir velocity runState (worldState, controllerState)
     | None ->
         let (_,gravityEffect) = tryApplyVelocity gravityStrength knight.position worldState.blocks
         match gravityEffect with
         | Some v ->
-            let newKnight = 
-                { knight with 
-                    position = knight.position
-                    direction = direction
-                    verticalSpeed = Some v
-                    state = Walking }
+            let newKnight = { knight with verticalSpeed = Some v }
             { worldState with knight = newKnight }, controllerState
         | None ->
-            if isStriking knight runState controllerState then
-                noChange
-            else if strikeKeys |> runState.IsAnyPressed && canStrike runState controllerState then
-                let newKnight = 
-                    { knight with 
-                        direction = direction
-                        state = Striking }
-                { worldState with knight = newKnight }, { controllerState with lastStrikeTime = runState.elapsed }
-            else if blockKeys |> runState.IsAnyPressed then
-                let newKnight = 
-                    { knight with 
-                        direction = direction
-                        state = Blocking }
-                { worldState with knight = newKnight }, controllerState
-            else if jumpKeys |> runState.WasAnyJustPressed then
-                let newKnight = 
-                    { knight with 
-                        direction = direction
-                        verticalSpeed = Some jumpSpeed
-                        state = Walking }
-                { worldState with knight = newKnight }, controllerState
-            else
-                let (position, state) = 
-                    match walkCommand with
-                    | Some dir -> tryWalk dir knight.position worldState.blocks, Walking
-                    | None -> knight.position, Standing
-
-                let newKnight = 
-                    { knight with 
-                        position = position
-                        direction = direction
-                        state = state }
-
-                { worldState with knight = newKnight }, controllerState
+            processOnGround runState (worldState, controllerState)

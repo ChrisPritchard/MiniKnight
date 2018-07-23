@@ -4,7 +4,7 @@ open GameCore
 open Model
 open Microsoft.Xna.Framework
 
-let animSpeed = 200.
+let animSpeed = 100.
 let screenWidth, screenHeight = 800, 600
 let blockWidth, blockHeight = 40, 40
 
