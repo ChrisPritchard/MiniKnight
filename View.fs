@@ -111,7 +111,6 @@ let getPlayingView runState worldState =
         let frame = getKnightFrame worldState.knight elapsed
         let rect = getKnightRect frame
         yield MappedImage ("knight", frame, rect)
-        yield ColouredText (Color.White, "default", sprintf "%f, %f" <|| worldState.knight.position, (20,20), TopLeft, 1.)
 
         match worldState.knight.state with
         | Dead ->
