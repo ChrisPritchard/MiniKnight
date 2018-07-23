@@ -112,6 +112,12 @@ let getPlayingView runState worldState =
         let rect = getKnightRect frame
         yield MappedImage ("knight", frame, rect)
         yield ColouredText (Color.White, "default", sprintf "%f, %f" <|| worldState.knight.position, (20,20), TopLeft, 1.)
+
+        match worldState.knight.state with
+        | Dead ->
+            yield ColouredText (Color.White, "default", "Game Over", (screenWidth / 2, screenHeight / 2), Centre, 1.5)
+            yield ColouredText (Color.White, "default", "Press 'R' to restart level", (screenWidth / 2, screenHeight / 2 + 50), Centre, 1.)
+        | _ -> ()
     } |> Seq.toList
 
 let getView runState model =

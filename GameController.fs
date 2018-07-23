@@ -15,6 +15,10 @@ let advanceGame (runState : RunState) =
     | _ when runState.WasJustPressed Keys.Escape -> None
     | Some model -> 
         match model with
+        | Playing worldState when 
+                worldState.knight.state = Dead && 
+                runState.WasJustPressed Keys.R -> 
+            MapLoader.getLevel 1 |> getLevelModel |> Some
         | Playing worldState -> 
             handlePlayingState runState worldState
         | _ -> Some model
