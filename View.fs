@@ -99,7 +99,8 @@ let getKnightRect frame =
 
 let getPlayingView runState worldState =
     let elapsed = runState.elapsed
-    let knightPos = worldState.knight.position
+    let knight = worldState.knight
+    let knightPos = knight.position
     seq {
         yield Image ("background", (0,0,screenWidth,screenHeight))
         yield! blocks knightPos worldState.blocks
@@ -108,15 +109,17 @@ let getPlayingView runState worldState =
         yield portal knightPos elapsed true worldState.entryPortal
         yield portal knightPos elapsed false worldState.exitPortal
          
-        let frame = getKnightFrame worldState.knight elapsed
+        let frame = getKnightFrame knight elapsed
         let rect = getKnightRect frame
         yield MappedImage ("knight", frame, rect)
 
-        match worldState.knight.state with
+        match knight.state with
         | Dead ->
             yield ColouredText (Color.White, "default", "Game Over", (screenWidth / 2, screenHeight / 2), Centre, 1.5)
-            yield ColouredText (Color.White, "default", "Press 'R' to restart level", (screenWidth / 2, screenHeight / 2 + 50), Centre, 1.)
-        | _ -> ()
+            yield ColouredText (Color.White, "default", sprintf "Score for this level: %i pts" knight.score, (screenWidth / 2, screenHeight / 2 + 50), Centre, 0.8)
+            yield ColouredText (Color.White, "default", "Press 'R' to try again", (screenWidth / 2, screenHeight / 2 + 90), Centre, 0.8)
+        | _ -> 
+            yield ColouredText (Color.White, "default", sprintf "score: %i pts" knight.score, (20, screenHeight - 30), TopLeft, 0.5)
     } |> Seq.toList
 
 let getView runState model =
