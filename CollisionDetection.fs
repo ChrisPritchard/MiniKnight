@@ -24,7 +24,6 @@ let private tryFindHorizontal checker (x, y) candidates =
     candidates |> List.tryFind (fun (bx, by) ->
             isInHorizontal by && checker bx ceilx floorx)
 
-
 let tryFindCollision (x, y) candidates direction =
     match direction with
     | West -> tryFindHorizontal (fun bx ceilx _ -> bx + 1 = ceilx) (x,y) candidates
