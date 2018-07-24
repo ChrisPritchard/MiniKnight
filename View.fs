@@ -127,8 +127,8 @@ let getPlayingView runState worldState =
 
         match knight.state with
         | Dead ->
-            yield Text ("default", "Game Over", (screenWidth / 2, screenHeight / 2), Centre, 1.5, Color.White)
-            yield Text ("default", sprintf "Score for this level: %i pts" knight.score, (screenWidth / 2, screenHeight / 2 + 50), Centre, 0.8, Color.White)
+            yield Text ("default", "You Died!", (screenWidth / 2, screenHeight / 2), Centre, 1.5, Color.White)
+            yield Text ("default", sprintf "Score before death: %i pts" knight.score, (screenWidth / 2, screenHeight / 2 + 50), Centre, 0.8, Color.White)
             yield Text ("default", "Press 'R' to try again", (screenWidth / 2, screenHeight / 2 + 90), Centre, 0.8, Color.White)
         | _ -> 
             yield Text ("default", sprintf "score: %i pts" knight.score, (20, screenHeight - 30), TopLeft, 0.5, Color.White)
