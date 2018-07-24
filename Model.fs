@@ -72,7 +72,13 @@ let getLevelModel levelMapTiles levelNumber startScore elapsed =
         blocks = adjacencyMapped
         spikes = ofKind Spikes
         coins = ofKind Coin
-        orcs = []
+        orcs = ofKind Orc |> List.map (fun (x, y) -> 
+        {
+            position = (float x, float y)
+            state = Standing
+            direction = Left
+            health = 3
+        })
         entryPortal = entryPortal
         exitPortal = oneKind ExitPortal (0,0)
         knight = 

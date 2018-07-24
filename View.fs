@@ -34,37 +34,52 @@ let frameFor max elapsed =
 let blockFor (x, y) =
     int (x * float blockWidth), int (y * float blockHeight)
 
-let relRectFor (x, y) (relX, relY) =
+let relRectForStatic (x, y) (relX, relY) =
     let relX, relY = x * blockWidth - relX, y * blockHeight - relY
+    centreX + relX, centreY + relY, blockWidth, blockHeight
+
+let relRectForOrc (x, y) (kx, ky) =
+    let bw, bh = float blockWidth, float blockHeight
+    let relX, relY = int <| x * bw - (kx * bw), int <| y * bh - (ky * bh)
     centreX + relX, centreY + relY, blockWidth, blockHeight
 
 let blocks knightPos = 
     let knightBlock = blockFor knightPos
     List.map (fun (x, y, adjacency) ->
-        let destRect = relRectFor (x, y) knightBlock
+        let destRect = relRectForStatic (x, y) knightBlock
         MappedImage ("stoneFloor", sprintf "floor%s" adjacency, destRect, Color.White))
 
 let spikes knightPos = 
     let knightBlock = blockFor knightPos
     List.map (fun (x, y) ->
-        let destRect = relRectFor (x, y) knightBlock
+        let destRect = relRectForStatic (x, y) knightBlock
         Image ("spikes", destRect, Color.White))
 
 let coins knightPos elapsed = 
     let knightBlock = blockFor knightPos
     List.map (fun (x, y) ->
-        let destRect = relRectFor (x, y) knightBlock
+        let destRect = relRectForStatic (x, y) knightBlock
         let frame = sprintf "goldCoinSm_%i" <| frameFor 10 elapsed
         MappedImage ("goldCoin", frame, destRect, Color.White))
 
 let portal knightPos elapsed isEntry (x, y) = 
-    let destRect = relRectFor (x, y) <| blockFor knightPos
+    let destRect = relRectForStatic (x, y) <| blockFor knightPos
     if isEntry then
         let frame = sprintf "portal-arrive_%i" <| frameFor 2 elapsed
         MappedImage ("portalArrive", frame, destRect, Color.White)
     else
         let frame = sprintf "portal_%i" <| frameFor 2 elapsed
         MappedImage ("portalDepart", frame, destRect, Color.White)
+
+let getOrcFrame = 
+    function
+    | _ -> "standRight2"
+
+let orcs knightPos =
+    List.map (fun (orc: Orc) -> 
+        let frame = getOrcFrame orc
+        let destRect = relRectForOrc orc.position knightPos
+        MappedImage ("orc", frame, destRect, Color.White))
 
 let getKnightFrame (knight : Knight) elapsed = 
     let byDir leftFrame rightFrame = if knight.direction = Left then leftFrame else rightFrame
@@ -119,6 +134,8 @@ let getPlayingView runState worldState =
         yield! coins knightPos elapsed worldState.coins
         yield portal knightPos elapsed true worldState.entryPortal
         yield portal knightPos elapsed false worldState.exitPortal
+
+        yield! orcs knightPos worldState.orcs
          
         let frame = getKnightFrame knight elapsed
         let rect = getKnightRect frame
