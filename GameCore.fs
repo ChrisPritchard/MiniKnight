@@ -16,11 +16,9 @@ type Loadable =
 type Origin = | TopLeft | Centre
 
 type ViewArtifact = 
-| Image of assetKey:string * destRect: (int*int*int*int)
-| ColouredImage of assetKey:string * destRect: (int*int*int*int) * color:Color
-| MappedImage of assetKey:string * mapKey:string * destRect: (int*int*int*int)
-| Text of assetKey:string * text:string * position:(int*int) * origin:Origin * scale:float
-| ColouredText of Color * assetKey:string * text:string * position:(int*int) * origin:Origin * scale:float
+| Image of assetKey:string * destRect: (int*int*int*int) * color:Color
+| MappedImage of assetKey:string * mapKey:string * destRect: (int*int*int*int) * color:Color
+| Text of assetKey:string * text:string * position:(int*int) * origin:Origin * scale:float * color:Color
 | SoundEffect of string
 
 type Resolution =
@@ -186,11 +184,9 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
         currentView
             |> List.iter (
                 function 
-                | Image (a,d) -> drawImage spriteBatch (a,d) Color.White
-                | ColouredImage (a,d,c) -> drawImage spriteBatch (a,d) c
-                | MappedImage (a,m,d) -> drawMappedImage spriteBatch (a,m,d) Color.White
-                | Text (a,t,p,o,s) -> drawText spriteBatch (a,t,p,o,s) Color.Black
-                | ColouredText (c,a,t,p,o,s) -> drawText spriteBatch (a,t,p,o,s) c
+                | Image (a,d,c) -> drawImage spriteBatch (a,d) c
+                | MappedImage (a,m,d,c) -> drawMappedImage spriteBatch (a,m,d) c
+                | Text (a,t,p,o,s,c) -> drawText spriteBatch (a,t,p,o,s) c
                 | SoundEffect s -> playSound s)
 
         spriteBatch.End()

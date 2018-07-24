@@ -23,6 +23,7 @@ and Orc = {
 and EntityState = 
     | Standing | Walking | Striking of startTime:float | Blocking 
     | Hit of startTime:float | Dying of startTime:float | Dead
+    | WarpingIn of startTime:float | WarpingOut of startTime:float
 and Direction = | Left | Right
 and Knight = {
     position: float * float
@@ -74,7 +75,7 @@ let getLevelModel levelMapTiles =
         knight = 
         {
             position = entryPortal |> (fun (x, y) -> float x, float y)
-            state = Standing
+            state = WarpingIn 0.
             direction = Right
             verticalSpeed = None
             health = 3

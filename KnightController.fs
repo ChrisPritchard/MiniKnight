@@ -88,6 +88,9 @@ let processInAir velocity runState worldState =
         | _ -> worldState.coins
     { worldState with knight = newKnight; coins = coins }
 
+let roughlyEqual (fx, fy) (ix, iy) = 
+    abs (fx - float ix) < 0.2 && abs (fy - float iy) < 0.2
+
 let processOnGround (runState: RunState) worldState =
     let knight = worldState.knight
     if strikeKeys |> runState.IsAnyPressed then
@@ -118,11 +121,15 @@ let processOnGround (runState: RunState) worldState =
 
             let coinDir = match direction with Left -> West | _ -> East
             let hasHitCoin = tryFindCollision knight.position worldState.coins coinDir
+            let hasHitExit = roughlyEqual knight.position worldState.exitPortal
             let newKnight = 
                 { knight with 
                     position = position
                     direction = direction
-                    state = state
+                    state = 
+                        match hasHitExit with
+                        | true -> WarpingOut runState.elapsed
+                        | false -> state
                     score =
                         match hasHitCoin with
                         | Some _ -> knight.score + coinScore
@@ -137,7 +144,9 @@ let processOnGround (runState: RunState) worldState =
 let processKnight runState worldState =
     let knight = worldState.knight
     match knight.state with
-    | Dead ->
+    | WarpingIn startTime when runState.elapsed - startTime < warpTime ->
+        worldState
+    | Dead | WarpingOut _ ->
         worldState
     | Dying startTime when runState.elapsed - startTime < (animSpeed * float dyingFrames) ->
         worldState
