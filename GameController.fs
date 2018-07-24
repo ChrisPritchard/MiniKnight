@@ -10,7 +10,8 @@ let handlePlayingState runState worldState =
     |> KnightController.processKnight runState
     |> Playing |> Some
 
-let firstLevel = MapLoader.getLevel 1
+let maxLevel = 5
+let levels = [1..maxLevel] |> List.map (fun i -> (i, MapLoader.getLevel i)) |> Map.ofList
 
 let hasReset (runState : RunState) worldState = 
     worldState.knight.state = Dead && runState.WasJustPressed Keys.R 
@@ -23,14 +24,25 @@ let hasWarpedOut (runState : RunState) worldState =
 let advanceGame runState =
     function
     | None -> 
-        getLevelModel firstLevel runState.elapsed |> Some 
+        getLevelModel levels.[1] 1 0 runState.elapsed |> Some 
     | _ when runState.WasJustPressed Keys.Escape -> None
     | Some model -> 
         match model with
         | Playing worldState when hasReset runState worldState -> 
-            getLevelModel firstLevel runState.elapsed |> Some
+            Some <| getLevelModel 
+                levels.[worldState.level] 
+                worldState.level 
+                worldState.knight.startScore 
+                runState.elapsed
         | Playing worldState when hasWarpedOut runState worldState -> 
-            getLevelModel firstLevel runState.elapsed |> Some
+            if worldState.level = maxLevel then
+                Some <| GameOver worldState.knight.score
+            else
+                Some <| getLevelModel 
+                    levels.[worldState.level + 1] 
+                    (worldState.level + 1)
+                    worldState.knight.score 
+                    runState.elapsed
         | Playing worldState -> 
             handlePlayingState runState worldState
         | _ -> Some model

@@ -5,6 +5,7 @@ type GameModel =
     | Playing of WorldState
     | GameOver of score:int
 and WorldState = {
+    level: int
     blocks: (int * int * string) list
     spikes: (int * int) list
     coins: (int * int) list
@@ -32,6 +33,7 @@ and Knight = {
     verticalSpeed: float option
     health: int
     score: int
+    startScore: int
 }
 
 let validAdjacents = 
@@ -51,7 +53,7 @@ let adjacencyKey (x, y) blocks =
         |> String.concat ""
     if List.contains key validAdjacents then key else "00000000"
 
-let getLevelModel levelMapTiles elapsed = 
+let getLevelModel levelMapTiles levelNumber startScore elapsed = 
     let byKind = Seq.groupBy (fun (_, _, kind) -> kind) levelMapTiles |> Map.ofSeq
     let ofKind k = 
         match Map.tryFind k byKind with 
@@ -66,6 +68,7 @@ let getLevelModel levelMapTiles elapsed =
     
     let entryPortal = oneKind EntryPortal (0,0)
     Playing { 
+        level = levelNumber
         blocks = adjacencyMapped
         spikes = ofKind Spikes
         coins = ofKind Coin
@@ -79,6 +82,7 @@ let getLevelModel levelMapTiles elapsed =
             direction = Right
             verticalSpeed = None
             health = 3
-            score = 0
+            score = startScore
+            startScore = startScore
         }
     }
