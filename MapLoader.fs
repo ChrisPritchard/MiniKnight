@@ -7,7 +7,7 @@ let mapKey = [
     (Color.FromArgb(128, 128, 128), Block)
     (Color.FromArgb(255, 0, 0), Spikes)
     (Color.FromArgb(38, 127, 0), EntryPortal)
-    (Color.FromArgb(10, 38, 255), ExitPortal)
+    (Color.FromArgb(0, 38, 255), ExitPortal)
     (Color.FromArgb(255, 216, 0), Coin)
     (Color.FromArgb(0, 0, 0), Orc)
 ]
