@@ -19,7 +19,7 @@ let private tryFindHorizontal checker (x, y) candidates =
         let by = float by
         by = y ||
         (by < y && (by + 1.) > y) ||
-        (by > x && (by - 1.) < y)
+        (by > y && (by - 1.) < y)
 
     candidates |> List.tryFind (fun (bx, by) ->
             isInHorizontal by && checker bx ceilx floorx)
