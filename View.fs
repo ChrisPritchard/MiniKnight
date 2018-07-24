@@ -10,7 +10,7 @@ let blockWidth, blockHeight = 40, 40
 
 let strikeFrames = 2
 let dyingFrames = 5
-let warpTime = 3000.
+let warpTime = 1500.
 
 let assetsToLoad = [
     Font ("default", "Content/coders_crux")
@@ -101,11 +101,11 @@ let getKnightRect frame =
 let getKnightColour knight elapsed = 
     match knight.state with
     | WarpingIn startTime -> 
-        let a = ((warpTime / (elapsed - startTime)) * 256.) |> int
-        new Color (Color.White, a)
+        let a = (elapsed - startTime) / warpTime
+        new Color (Color.White, float32 a)
     | WarpingOut startTime -> 
-        let a = ((warpTime / (elapsed - startTime)) * 256.) |> int
-        new Color (Color.White, 256 - a)
+        let a = (elapsed - startTime) / warpTime
+        new Color (Color.White, float32 <| 256. - a)
     | _ -> Color.White
 
 let getPlayingView runState worldState =
