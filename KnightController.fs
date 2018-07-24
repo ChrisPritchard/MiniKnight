@@ -23,12 +23,12 @@ let tryApplyVelocity verticalSpeed (x, y) blocks =
     let ny = y + verticalSpeed
     let blocks = blocks |> List.map (fun (bx, by, _) -> (bx, by))
     if verticalSpeed < 0. then
-        let ceiling = tryFindCollision North (x, ny) blocks
+        let ceiling = tryFindCollision (x, ny) blocks North
         match ceiling with
         | Some (_, by) -> (x, float by + 1.), Some 0.
         | None -> (x, ny), Some verticalSpeed
     else
-        let floor = tryFindCollision South (x, ny) blocks
+        let floor = tryFindCollision (x, ny) blocks South
         match floor with
         | Some (_, by) -> (x, float by - 1.), None
         | None -> (x, ny), Some verticalSpeed
@@ -37,12 +37,12 @@ let tryWalk direction (x, y) blocks =
     let nx = if direction = Left then x - walkSpeed else x + walkSpeed
     let blocks = blocks |> List.map (fun (bx, by, _) -> (bx, by))
     if direction = Left then
-        let wall = tryFindCollision West (nx, y) blocks
+        let wall = tryFindCollision (nx, y) blocks West
         match wall with
         | Some (bx, _) -> (float bx + 1., y)
         | None -> (nx, y)
     else
-        let wall = tryFindCollision East (nx, y) blocks
+        let wall = tryFindCollision (nx, y) blocks East
         match wall with
         | Some (bx, _) -> (float bx - 1., y)
         | None -> (nx, y)
@@ -66,8 +66,8 @@ let processInAir velocity runState worldState =
         | Some dir -> tryWalk dir positionAfterVertical worldState.blocks
         | None -> positionAfterVertical
 
-    let hasHitSpikes = tryFindCollision South finalPosition worldState.spikes
-    let hasHitCoin = tryFindCollision South finalPosition worldState.coins
+    let hasHitSpikes = [North;South] |> List.tryPick (tryFindCollision finalPosition worldState.spikes)
+    let hasHitCoin = [North;South] |> List.tryPick (tryFindCollision finalPosition worldState.coins)
     let newKnight = 
         { knight with 
             position = finalPosition
@@ -117,7 +117,7 @@ let processOnGround (runState: RunState) worldState =
                 | None -> knight.position, Standing
 
             let coinDir = match direction with Left -> West | _ -> East
-            let hasHitCoin = tryFindCollision coinDir knight.position worldState.coins    
+            let hasHitCoin = tryFindCollision knight.position worldState.coins coinDir
             let newKnight = 
                 { knight with 
                     position = position

@@ -25,7 +25,7 @@ let private tryFindHorizontal checker (x, y) candidates =
             isInHorizontal by && checker bx ceilx floorx)
 
 
-let tryFindCollision direction (x, y) candidates =
+let tryFindCollision (x, y) candidates direction =
     match direction with
     | West -> tryFindHorizontal (fun bx ceilx _ -> bx + 1 = ceilx) (x,y) candidates
     | East -> tryFindHorizontal (fun bx _ floorx -> bx - 1 = floorx) (x,y) candidates
