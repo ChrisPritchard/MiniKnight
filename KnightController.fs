@@ -7,7 +7,7 @@ open CollisionDetection
 open Microsoft.Xna.Framework.Input
 
 let walkSpeed = 0.15
-let jumpSpeed = -0.55
+let jumpSpeed = -0.6
 let gravityStrength = 0.05
 let terminalVelocity = 0.9
 
