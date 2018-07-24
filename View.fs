@@ -105,7 +105,7 @@ let getKnightColour knight elapsed =
         new Color (Color.White, float32 a)
     | WarpingOut startTime -> 
         let a = (elapsed - startTime) / warpTime
-        new Color (Color.White, float32 <| 256. - a)
+        new Color (Color.White, float32 <| 1. - a)
     | _ -> Color.White
 
 let getPlayingView runState worldState =

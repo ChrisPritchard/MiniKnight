@@ -51,7 +51,7 @@ let adjacencyKey (x, y) blocks =
         |> String.concat ""
     if List.contains key validAdjacents then key else "00000000"
 
-let getLevelModel levelMapTiles = 
+let getLevelModel levelMapTiles elapsed = 
     let byKind = Seq.groupBy (fun (_, _, kind) -> kind) levelMapTiles |> Map.ofSeq
     let ofKind k = 
         match Map.tryFind k byKind with 
@@ -75,7 +75,7 @@ let getLevelModel levelMapTiles =
         knight = 
         {
             position = entryPortal |> (fun (x, y) -> float x, float y)
-            state = WarpingIn 0.
+            state = WarpingIn elapsed
             direction = Right
             verticalSpeed = None
             health = 3
