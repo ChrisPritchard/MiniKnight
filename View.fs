@@ -71,13 +71,18 @@ let portal knightPos elapsed isEntry (x, y) =
         let frame = sprintf "portal_%i" <| frameFor 2 elapsed
         MappedImage ("portalDepart", frame, destRect, Color.White)
 
-let getOrcFrame = 
-    function
-    | _ -> "standRight2"
+let getOrcFrame (orc : Orc) elapsed = 
+    let byDir leftFrame rightFrame = if orc.direction = Left then leftFrame else rightFrame
+    let numberedFrame leftStart rightStart maxFrame elapsed =
+        let frame = (if orc.direction = Left then leftStart else rightStart) + (frameFor maxFrame elapsed)
+        sprintf "Orc_%i" frame
+    match orc.state with
+    | Walking -> numberedFrame 6 15 4 elapsed
+    | _ -> byDir "standLeft2" "standRight2"
 
-let orcs knightPos =
+let orcs knightPos elapsed =
     List.map (fun (orc: Orc) -> 
-        let frame = getOrcFrame orc
+        let frame = getOrcFrame orc elapsed
         let destRect = relRectForOrc orc.position knightPos
         MappedImage ("orc", frame, destRect, Color.White))
 
@@ -135,7 +140,7 @@ let getPlayingView runState worldState =
         yield portal knightPos elapsed true worldState.entryPortal
         yield portal knightPos elapsed false worldState.exitPortal
 
-        yield! orcs knightPos worldState.orcs
+        yield! orcs knightPos elapsed worldState.orcs
          
         let frame = getKnightFrame knight elapsed
         let rect = getKnightRect frame
