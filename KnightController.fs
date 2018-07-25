@@ -88,6 +88,24 @@ let processInAir velocity runState worldState =
         | _ -> worldState.coins
     { worldState with knight = newKnight; coins = coins }
 
+let testForStrickenOrc (kx, ky) direction elapsed (orcs : Orc list) =
+    let orc = orcs |> List.tryFind (fun orc -> 
+        let ox, oy = orc.position
+        oy = ky &&
+        (match direction with
+        | Left -> ox > kx - 1. && ox < kx // TODO fix
+        | Right -> kx < ox && kx + 1. > ox))
+    match orc with
+    | Some o when o.state <> Blocking -> 
+        orcs |> List.map (fun oi -> 
+            match oi with
+            | _ when oi = o -> 
+                { o with 
+                    health = o.health - 1
+                    state = if o.health = 1 then Dying elapsed else o.state }
+            | _ -> oi)
+    | _ -> orcs
+
 let roughlyEqual (fx, fy) (ix, iy) = 
     abs (fx - float ix) < 0.2 && abs (fy - float iy) < 0.2
 
@@ -95,7 +113,15 @@ let processOnGround (runState: RunState) worldState =
     let knight = worldState.knight
     if strikeKeys |> runState.IsAnyPressed then
         let newKnight = { knight with  state = Striking runState.elapsed }
-        { worldState with knight = newKnight }
+        let newOrcs = 
+            testForStrickenOrc 
+                knight.position 
+                knight.direction 
+                runState.elapsed 
+                worldState.orcs
+        { worldState with 
+            knight = newKnight
+            orcs = newOrcs }
     else 
         let walkCommand = getWalkCommand runState
         let direction = match walkCommand with Some dir -> dir | None -> knight.direction
