@@ -9,6 +9,15 @@ let checkForFloor (nx, y) direction blocks =
     let testx = if direction = Left then floor nx |> int else ceil nx |> int
     blocks |> List.exists (fun (bx, by, _) -> (bx, by) = (testx, testy))
 
+
+let checkForWall (nx, y) direction = 
+    List.exists (fun (bx, by, _) -> 
+        let fbx = float bx
+        by = int y &&
+        (match direction with
+        | Left -> fbx > nx - 1. && fbx < nx
+        | Right -> nx < fbx && nx + 1. > fbx))
+
 let checkForFriend (nx, y) direction = 
     List.exists (fun (ox, oy) -> 
         oy = y &&
@@ -23,6 +32,7 @@ let processOrc runState worldState (orc : Orc) =
     let otherOrcs = worldState.orcs |> List.except [orc] |> List.map (fun o -> o.position)
     let shouldTurn = 
         checkForFloor (nx, y) orc.direction worldState.blocks |> not
+        || checkForWall (nx, y) orc.direction worldState.blocks
         || checkForFriend (nx, y) orc.direction otherOrcs
 
     let direction = if not shouldTurn then orc.direction else if orc.direction = Left then Right else Left
