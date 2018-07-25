@@ -76,8 +76,16 @@ let getOrcFrame (orc : Orc) elapsed =
     let numberedFrame leftStart rightStart maxFrame elapsed =
         let frame = (if orc.direction = Left then leftStart else rightStart) + (frameFor maxFrame elapsed)
         sprintf "Orc_%i" frame
+    let strikeFrame startTime = 
+        let index = if elapsed - startTime < animSpeed then 1 else 0
+        byDir (sprintf "Orc_%i" (24 + index)) (sprintf "Orc_%i" (26 + index))
     match orc.state with
     | Walking -> numberedFrame 6 15 4 elapsed
+    | Striking t -> strikeFrame t
+    | Blocking -> byDir "guardLeft1" "guardRight1"
+    | Hit t -> numberedFrame 2 4 2 (elapsed - t)
+    | Dying t -> numberedFrame 10 19 dyingFrames (elapsed - t)
+    | Dead -> byDir "deadLeft2" "deadRight2"
     | _ -> byDir "standLeft2" "standRight2"
 
 let orcs knightPos elapsed =
