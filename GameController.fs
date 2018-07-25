@@ -8,6 +8,7 @@ open Microsoft.Xna.Framework.Input
 let handlePlayingState runState worldState =
     worldState
     |> KnightController.processKnight runState
+    |> OrcController.processOrcs runState
     |> Playing |> Some
 
 let maxLevel = 5
