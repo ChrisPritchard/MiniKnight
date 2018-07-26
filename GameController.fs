@@ -25,7 +25,7 @@ let hasWarpedOut (runState : RunState) worldState =
 let advanceGame runState =
     function
     | None -> 
-        getLevelModel levels.[5] 1 0 runState.elapsed |> Some 
+        getLevelModel levels.[1] 1 0 runState.elapsed |> Some 
     | _ when runState.WasJustPressed Keys.Escape -> None
     | Some model -> 
         match model with
