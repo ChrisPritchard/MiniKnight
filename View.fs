@@ -38,10 +38,26 @@ let relRectForStatic (x, y) (relX, relY) =
     let relX, relY = x * blockWidth - relX, y * blockHeight - relY
     centreX + relX, centreY + relY, blockWidth, blockHeight
 
-let relRectForOrc (x, y) (kx, ky) =
+
+let getOrcRect frame (x,y) = 
+    let strikeWidth = float blockWidth * 1.5 |> int
+    let blockingWidth = float blockWidth * 0.8 |> int
+    match frame with
+    | "Orc_25" ->
+        (x - (strikeWidth - blockWidth), y, strikeWidth, blockHeight)
+    | "Orc_27" ->
+        (x, y, strikeWidth, blockHeight)
+    | "guardLeft1" ->
+        (x, y, blockingWidth, blockHeight)
+    | "guardRight1" ->
+        (x + (blockWidth - blockingWidth), y, blockingWidth, blockHeight)
+    | _ -> 
+        (x, y, blockWidth, blockHeight)
+
+let relRectForOrc (x, y) (kx, ky) frame =
     let bw, bh = float blockWidth, float blockHeight
     let relX, relY = int <| x * bw - (kx * bw), int <| y * bh - (ky * bh)
-    centreX + relX, centreY + relY, blockWidth, blockHeight
+    getOrcRect frame (centreX + relX, centreY + relY)
 
 let blocks knightPos = 
     let knightBlock = blockFor knightPos
@@ -91,7 +107,7 @@ let getOrcFrame (orc : Orc) elapsed =
 let orcs knightPos elapsed =
     List.map (fun (orc: Orc) -> 
         let frame = getOrcFrame orc elapsed
-        let destRect = relRectForOrc orc.position knightPos
+        let destRect = relRectForOrc orc.position knightPos frame
         MappedImage ("orc", frame, destRect, Color.White))
 
 let getKnightFrame (knight : Knight) elapsed = 

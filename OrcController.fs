@@ -27,6 +27,12 @@ let checkForFriend (nx, y) direction =
         | Left -> ox > nx - 1. && ox < nx
         | Right -> nx < ox && nx + 1. > ox))
 
+let checkForEnemy (x, y) direction (kx, ky) = 
+    ky = y &&
+    (match direction with
+    | Left -> kx > x - 2. && kx < x
+    | Right -> x < kx && x + 2. > kx)
+
 let processOrc (runState : RunState) worldState (orc : Orc) =
     match orc.state with
     | Dead -> orc
@@ -34,22 +40,25 @@ let processOrc (runState : RunState) worldState (orc : Orc) =
         { orc with state = Dead }
     | Dying _ -> orc
     | _ ->
-        let x, y = orc.position
-        let nx = if orc.direction = Left then x - walkSpeed else x + walkSpeed
+        if checkForEnemy orc.position orc.direction worldState.knight.position then
+            { orc with state = Blocking }
+        else
+            let x, y = orc.position
+            let nx = if orc.direction = Left then x - walkSpeed else x + walkSpeed
 
-        let otherOrcs = worldState.orcs |> List.except [orc] |> List.map (fun o -> o.position)
-        let shouldTurn = 
-            checkForFloor (nx, y) orc.direction worldState.blocks |> not
-            || checkForWall (nx, y) orc.direction worldState.blocks
-            || checkForFriend (nx, y) orc.direction otherOrcs
+            let otherOrcs = worldState.orcs |> List.except [orc] |> List.map (fun o -> o.position)
+            let shouldTurn = 
+                checkForFloor (nx, y) orc.direction worldState.blocks |> not
+                || checkForWall (nx, y) orc.direction worldState.blocks
+                || checkForFriend (nx, y) orc.direction otherOrcs
 
-        let direction = if not shouldTurn then orc.direction else if orc.direction = Left then Right else Left
-        let position = if not shouldTurn then (nx, y) else orc.position
-        
-        { orc  with 
-            direction = direction
-            position = position
-            state = Walking }
+            let direction = if not shouldTurn then orc.direction else if orc.direction = Left then Right else Left
+            let position = if not shouldTurn then (nx, y) else orc.position
+            
+            { orc  with 
+                direction = direction
+                position = position
+                state = Walking }
 
 let processOrcs runState worldState =
     { worldState with orcs = worldState.orcs |> List.map (processOrc runState worldState) }
