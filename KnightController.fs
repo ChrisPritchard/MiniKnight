@@ -12,6 +12,7 @@ let gravityStrength = 0.05
 let terminalVelocity = 0.9
 
 let coinScore = 2
+let killScore = 10
 
 let walkLeftKeys = [Keys.A;Keys.Left]
 let walkRightKeys = [Keys.D;Keys.Right]
@@ -93,7 +94,7 @@ let testForStrickenOrc (kx, ky) direction elapsed (orcs : Orc list) =
         let ox, oy = orc.position
         oy = ky &&
         (match direction with
-        | Left -> ox > kx - 2. && ox < kx // TODO fix
+        | Left -> ox > kx - 2. && ox < kx
         | Right -> kx < ox && kx + 2. > ox))
     match orc with
     | Some o when o.state <> Blocking -> 
@@ -103,8 +104,8 @@ let testForStrickenOrc (kx, ky) direction elapsed (orcs : Orc list) =
                 { o with 
                     health = o.health - 1
                     state = if o.health = 1 then Dying elapsed else o.state }
-            | _ -> oi)
-    | _ -> orcs
+            | _ -> oi), o.health = 1
+    | _ -> orcs, false
 
 let roughlyEqual (fx, fy) (ix, iy) = 
     abs (fx - float ix) < 0.2 && abs (fy - float iy) < 0.2
@@ -112,13 +113,16 @@ let roughlyEqual (fx, fy) (ix, iy) =
 let processOnGround (runState: RunState) worldState =
     let knight = worldState.knight
     if strikeKeys |> runState.IsAnyPressed then
-        let newKnight = { knight with  state = Striking runState.elapsed }
-        let newOrcs = 
+        let (newOrcs, hasKill) = 
             testForStrickenOrc 
                 knight.position 
                 knight.direction 
                 runState.elapsed 
                 worldState.orcs
+        let newKnight = 
+            { knight with 
+                state = Striking runState.elapsed
+                score = if hasKill then knight.score + killScore else knight.score }
         { worldState with 
             knight = newKnight
             orcs = newOrcs }
