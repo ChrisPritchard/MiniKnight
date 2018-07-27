@@ -97,14 +97,17 @@ let testForStrickenOrc (kx, ky) direction elapsed (orcs : Orc list) =
         | Left -> ox > kx - 2. && ox < kx
         | Right -> kx < ox && kx + 2. > ox))
     match orc with
-    | Some o when o.state <> Blocking -> 
-        orcs |> List.map (fun oi -> 
-            match oi with
-            | _ when oi = o -> 
-                { o with 
-                    health = o.health - 1
-                    state = if o.health = 1 then Dying elapsed else o.state }
-            | _ -> oi), o.health = 1
+    | Some o -> 
+        match o.state with
+        | Guarding _ -> orcs, false
+        | _ ->
+            orcs |> List.map (fun oi -> 
+                match oi with
+                | _ when oi = o -> 
+                    { o with 
+                        health = o.health - 1
+                        state = if o.health = 1 then Falling elapsed else o.state }
+                | _ -> oi), o.health = 1
     | _ -> orcs, false
 
 let roughlyEqual (fx, fy) (ix, iy) = 

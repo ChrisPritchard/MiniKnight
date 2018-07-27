@@ -35,13 +35,13 @@ let checkForEnemy (x, y) direction (kx, ky) =
 
 let processOrc (runState : RunState) worldState (orc : Orc) =
     match orc.state with
-    | Dead -> orc
-    | Dying t when runState.elapsed - t > (animSpeed * float dyingFrames) ->
-        { orc with state = Dead }
-    | Dying _ -> orc
+    | Slain -> orc
+    | Falling t when runState.elapsed - t > (animSpeed * float dyingFrames) ->
+        { orc with state = Slain }
+    | Falling _ -> orc
     | _ ->
         if checkForEnemy orc.position orc.direction worldState.knight.position then
-            { orc with state = Blocking }
+            { orc with state = Guarding runState.elapsed }
         else
             let x, y = orc.position
             let nx = if orc.direction = Left then x - walkSpeed else x + walkSpeed
@@ -58,7 +58,7 @@ let processOrc (runState : RunState) worldState (orc : Orc) =
             { orc  with 
                 direction = direction
                 position = position
-                state = Walking }
+                state = Patrolling }
 
 let processOrcs runState worldState =
     { worldState with orcs = worldState.orcs |> List.map (processOrc runState worldState) }

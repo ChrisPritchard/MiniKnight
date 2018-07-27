@@ -17,24 +17,28 @@ and WorldState = {
 and MapTile = | Block | Spikes | Coin | Orc | EntryPortal | ExitPortal
 and Orc = {
     position: float * float
-    state: EntityState
+    state: OrcState
     direction: Direction
     health: int
 }
-and EntityState = 
-    | Standing | Walking | Striking of startTime:float | Blocking 
-    | Hit of startTime:float | Dying of startTime:float | Dead
-    | WarpingIn of startTime:float | WarpingOut of startTime:float
+and OrcState = 
+    | Patrolling | ReadyingAttack of startTime:float
+    | Attacking of startTime:float | Guarding of startTime:float 
+    | Falling of startTime:float | Slain
 and Direction = | Left | Right
 and Knight = {
     position: float * float
-    state: EntityState
+    state: KnightState
     direction: Direction
     verticalSpeed: float option
     health: int
     score: int
     startScore: int
 }
+and KnightState = 
+    | Standing | Walking | Striking of startTime:float | Blocking
+    | Dying of startTime:float | Dead
+    | WarpingIn of startTime:float | WarpingOut of startTime:float
 
 let validAdjacents = 
     [
@@ -75,7 +79,7 @@ let getLevelModel levelMapTiles levelNumber startScore elapsed =
         orcs = ofKind Orc |> List.map (fun (x, y) -> 
         {
             position = (float x, float y)
-            state = Standing
+            state = Patrolling
             direction = Left
             health = 3
         })
