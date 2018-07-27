@@ -93,8 +93,8 @@ let testForStrickenOrc (kx, ky) direction elapsed (orcs : Orc list) =
         let ox, oy = orc.position
         oy = ky &&
         (match direction with
-        | Left -> ox > kx - 1. && ox < kx // TODO fix
-        | Right -> kx < ox && kx + 1. > ox))
+        | Left -> ox > kx - 2. && ox < kx // TODO fix
+        | Right -> kx < ox && kx + 2. > ox))
     match orc with
     | Some o when o.state <> Blocking -> 
         orcs |> List.map (fun oi -> 

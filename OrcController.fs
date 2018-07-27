@@ -1,6 +1,8 @@
 module OrcController
 
+open GameCore
 open Model
+open View
 
 let walkSpeed = 0.05
 
@@ -25,23 +27,29 @@ let checkForFriend (nx, y) direction =
         | Left -> ox > nx - 1. && ox < nx
         | Right -> nx < ox && nx + 1. > ox))
 
-let processOrc runState worldState (orc : Orc) =
-    let x, y = orc.position
-    let nx = if orc.direction = Left then x - walkSpeed else x + walkSpeed
+let processOrc (runState : RunState) worldState (orc : Orc) =
+    match orc.state with
+    | Dead -> orc
+    | Dying t when runState.elapsed - t > (animSpeed * float dyingFrames) ->
+        { orc with state = Dead }
+    | Dying _ -> orc
+    | _ ->
+        let x, y = orc.position
+        let nx = if orc.direction = Left then x - walkSpeed else x + walkSpeed
 
-    let otherOrcs = worldState.orcs |> List.except [orc] |> List.map (fun o -> o.position)
-    let shouldTurn = 
-        checkForFloor (nx, y) orc.direction worldState.blocks |> not
-        || checkForWall (nx, y) orc.direction worldState.blocks
-        || checkForFriend (nx, y) orc.direction otherOrcs
+        let otherOrcs = worldState.orcs |> List.except [orc] |> List.map (fun o -> o.position)
+        let shouldTurn = 
+            checkForFloor (nx, y) orc.direction worldState.blocks |> not
+            || checkForWall (nx, y) orc.direction worldState.blocks
+            || checkForFriend (nx, y) orc.direction otherOrcs
 
-    let direction = if not shouldTurn then orc.direction else if orc.direction = Left then Right else Left
-    let position = if not shouldTurn then (nx, y) else orc.position
-    
-    { orc  with 
-        direction = direction
-        position = position
-        state = Walking }
+        let direction = if not shouldTurn then orc.direction else if orc.direction = Left then Right else Left
+        let position = if not shouldTurn then (nx, y) else orc.position
+        
+        { orc  with 
+            direction = direction
+            position = position
+            state = Walking }
 
 let processOrcs runState worldState =
     { worldState with orcs = worldState.orcs |> List.map (processOrc runState worldState) }
