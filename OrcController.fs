@@ -35,22 +35,28 @@ let checkForEnemy (x, y) direction (kx, ky) =
     | Left -> kx > x - 1.5 && kx < x
     | Right -> x < kx && x + 1.5 > kx)
 
-let processOrc (runState : RunState) worldState (orc : Orc) =
+let processOrc (runState : RunState) worldState knight (orc : Orc) =
     let isInAttackRange = checkForEnemy orc.position orc.direction worldState.knight.position
+
     match orc.state with
     | Falling t when runState.elapsed - t > (animSpeed * float dyingFrames) ->
-        { orc with state = Slain }
+        { orc with state = Slain }, knight
     | Guarding t when runState.elapsed - t > guardTime ->
-        { orc with state = if isInAttackRange then ReadyingAttack runState.elapsed else Patrolling }
+        { orc with state = if isInAttackRange then ReadyingAttack runState.elapsed else Patrolling }, knight
     | ReadyingAttack t when runState.elapsed - t > readyTime ->
-        // check for player hit
-        { orc with state = if isInAttackRange then Attacking runState.elapsed else Patrolling }
+        { orc with state = if isInAttackRange then Attacking runState.elapsed else Patrolling }, knight
     | Attacking t when runState.elapsed - t > (animSpeed * float strikeFrames) ->
-        { orc with state = Patrolling }
+        let newKnight = 
+            if isInAttackRange && knight.state <> Blocking then
+                { knight with 
+                    health = knight.health - 1
+                    state = if knight.health = 1 then Dying runState.elapsed else knight.state }
+            else knight
+        { orc with state = Patrolling }, newKnight
     | Falling _ 
-    | ReadyingAttack _ | Guarding _ | Attacking _ | Slain -> orc
+    | ReadyingAttack _ | Guarding _ | Attacking _ | Slain -> orc, knight
     | _ when isInAttackRange ->
-        { orc with state = Guarding runState.elapsed }
+        { orc with state = Guarding runState.elapsed }, knight
     | _ ->
         let x, y = orc.position
         let nx = if orc.direction = Left then x - walkSpeed else x + walkSpeed
@@ -67,7 +73,12 @@ let processOrc (runState : RunState) worldState (orc : Orc) =
         { orc  with 
             direction = direction
             position = position
-            state = Patrolling }
+            state = Patrolling }, knight
 
 let processOrcs runState worldState =
-    { worldState with orcs = worldState.orcs |> List.map (processOrc runState worldState) }
+    let knight, orcs = List.fold (fun (k,ol) o -> 
+        let newOrc, knight = processOrc runState worldState k o
+        (knight, newOrc::ol)) (worldState.knight, []) worldState.orcs
+    { worldState with 
+        knight = knight
+        orcs = orcs }
