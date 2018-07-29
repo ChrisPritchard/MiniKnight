@@ -39,6 +39,8 @@ let assetsToLoad = [
     Sound ("knightHit3", "./Content/Sounds/Knight/hit3.wav")
     Sound ("knightDie", "./Content/Sounds/Knight/die.wav")
     Sound ("jump", "./Content/Sounds/Knight/jump.wav")
+    Sound ("walk1", "./Content/Sounds/Knight/walk1.wav")
+    Sound ("walk2", "./Content/Sounds/Knight/walk2.wav")
     Sound ("hitSpikes", "./Content/Sounds/Spikes.wav")
     Sound ("warping", "./Content/Sounds/Portal.wav")
 ]
@@ -221,7 +223,11 @@ let getPlayingView runState worldState =
             yield Text ("default", sprintf "score: %i pts" knight.score, (20, screenHeight - 30), TopLeft, 0.5, Color.White)
 
         yield! sounds elapsed worldState.events
-
+        if knight.state = Walking && knight.verticalSpeed = None then
+            if int elapsed % 600 = 0 then
+                yield SoundEffect "walk1"
+            else if int elapsed % 300 = 0 then
+                yield SoundEffect "walk2"
     } |> Seq.toList
 
 let getView runState model =
