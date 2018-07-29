@@ -167,13 +167,20 @@ let getKnightColour knight elapsed =
 let sounds elapsed = 
     let indexed key max = sprintf "%s%i" key <| int elapsed % max + 1
     List.map (function            
-    | OrcSwing | KnightSwing -> Some <| SoundEffect (indexed "swing" 3)
-    | OrcBlocked | KnightBlocked -> Some <| SoundEffect (indexed "block" 3)
-    | OrcHit -> Some <| SoundEffect (indexed "orcHit" 2)
-    | OrcFalling -> Some <| SoundEffect "orcDie"
-    | Jump -> Some <| SoundEffect "jump"
-    | _ -> None)
-    >> List.choose id
+    | OrcSwing | KnightSwing -> 
+        SoundEffect <| indexed "swing" 3
+    | OrcBlocked | KnightBlocked -> 
+        SoundEffect <| indexed "block" 3
+    | OrcHit -> 
+        SoundEffect <| indexed "orcHit" 2
+    | OrcFalling -> 
+        SoundEffect "orcDie"
+    | Jump -> 
+        SoundEffect "jump"
+    | KnightHit -> 
+        SoundEffect <| indexed "knightHit" 3
+    | KnightDying -> 
+        SoundEffect "knightDie")
 
 let getPlayingView runState worldState =
     let elapsed = runState.elapsed
@@ -203,6 +210,7 @@ let getPlayingView runState worldState =
             yield Text ("default", sprintf "score: %i pts" knight.score, (20, screenHeight - 30), TopLeft, 0.5, Color.White)
 
         yield! sounds elapsed worldState.events
+
     } |> Seq.toList
 
 let getView runState model =

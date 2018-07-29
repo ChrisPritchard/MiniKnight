@@ -119,7 +119,13 @@ let processInAir velocity runState worldState =
         match hasHitCoin with
         | Some c -> List.except [c] worldState.coins
         | _ -> worldState.coins
-    { worldState with knight = newKnight; coins = coins }
+    { worldState with 
+        knight = newKnight
+        coins = coins
+        events =
+            match hasHitSpikes with
+            | Some _ -> KnightDying::worldState.events
+            | _ -> worldState.events }
 
 let testForStrickenOrc (kx, ky) direction elapsed (orcs : Orc list) =
     let orc = orcs |> List.tryFind (fun orc -> 
@@ -209,7 +215,9 @@ let processOnGround (runState: RunState) worldState =
                 match hasHitCoin with
                 | Some c -> List.except [c] worldState.coins
                 | _ -> worldState.coins
-            { worldState with knight = newKnight; coins = coins }
+            { worldState with 
+                knight = newKnight
+                coins = coins }
 
 let processKnight runState worldState =
     let knight = worldState.knight
