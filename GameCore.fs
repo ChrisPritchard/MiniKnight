@@ -65,6 +65,7 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
     let mutable keyboardInfo = { pressed = []; keysDown = []; keysUp = [] }
     let mutable currentModel: 'TModel option = None
     let mutable currentView: ViewArtifact list = []
+    let mutable currentSong: Song option = None
     let mutable firstDrawComplete = false
 
     let mutable spriteBatch = Unchecked.defaultof<SpriteBatch>
@@ -148,7 +149,11 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
             | Some (MusicAsset s) -> s
             | None -> sprintf "Missing asset: %s" assetKey |> failwith
             | _ -> sprintf "Asset was not a Song: %s" assetKey |> failwith
-        MediaPlayer.Play(song)
+        match currentSong with
+        | Some s when s = song -> ()
+        | _ ->
+            currentSong <- Some song
+            MediaPlayer.Play(song)
 
     override __.LoadContent() = 
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
@@ -200,7 +205,7 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
 
     override __.Draw(_) =
         firstDrawComplete <- true
-        this.GraphicsDevice.Clear Color.White
+        this.GraphicsDevice.Clear Color.Black
         
         spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp)
 

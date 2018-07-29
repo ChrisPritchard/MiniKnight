@@ -6,6 +6,7 @@ open View
 open Microsoft.Xna.Framework.Input
 open System.Drawing
 
+let timeToLoad = 3000.
 let bubbleSpeed = 0.02
 let bubbleHeight = 1.
 
@@ -48,31 +49,28 @@ let processBubbles worldState =
                     let (_, y) = b.position
                     (b.startY - y) < bubbleHeight) }
 
-let advanceGame runState =
+let advanceGame (runState : RunState) =
+    let elapsed = runState.elapsed
     function
-    | None -> 
-        getLevelModel levels.[1] 1 0 runState.elapsed |> Some 
     | _ when runState.WasJustPressed Keys.Escape -> None
-    | Some model -> 
-        match model with
-        | Playing worldState when hasReset runState worldState -> 
-            Some <| getLevelModel 
-                levels.[worldState.level] 
-                worldState.level 
-                worldState.knight.startScore 
-                runState.elapsed
-        | Playing worldState when hasWarpedOut runState worldState && worldState.level = maxLevel -> 
-            Some <| GameOver worldState.knight.score
-        | Playing worldState when hasWarpedOut runState worldState ->
-            Some <| getLevelModel 
-                levels.[worldState.level + 1] 
-                (worldState.level + 1)
-                worldState.knight.score 
-                runState.elapsed
-        | Playing worldState -> 
-            { worldState with events = [] }
-            |> KnightController.processKnight runState
-            |> OrcController.processOrcs runState
-            |> processBubbles
-            |> Playing |> Some            
-        | _ -> Some model
+    | None -> 
+        LoadingScreen (elapsed, 1, maxLevel, 0) |> Some
+    | Some (LoadingScreen (t, l, _, score)) when elapsed - t > timeToLoad ->
+        getLevelModel levels.[l] l score runState.elapsed |> Some 
+    | Some (Playing worldState) when hasReset runState worldState -> 
+        Some <| getLevelModel 
+            levels.[worldState.level] 
+            worldState.level 
+            worldState.knight.startScore 
+            runState.elapsed
+    | Some (Playing worldState) when hasWarpedOut runState worldState && worldState.level = maxLevel -> 
+        Some <| GameOver worldState.knight.score
+    | Some (Playing worldState) when hasWarpedOut runState worldState ->
+        LoadingScreen (elapsed, worldState.level + 1, maxLevel, worldState.knight.score) |> Some
+    | Some (Playing worldState) -> 
+        { worldState with events = [] }
+        |> KnightController.processKnight runState
+        |> OrcController.processOrcs runState
+        |> processBubbles
+        |> Playing |> Some            
+    | other -> other

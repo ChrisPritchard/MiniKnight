@@ -2,6 +2,11 @@ module Model
 
 type GameModel = 
     | Menu
+    | LoadingScreen of 
+        startTime:float * 
+        level:int * 
+        maxLevel:int * 
+        currentScore:int
     | Playing of WorldState
     | GameOver of score:int
 and WorldState = {
@@ -50,8 +55,6 @@ and Event =
     | OrcSwing | OrcBlocked | OrcHit | OrcFalling
     | KnightSwing | KnightBlocked | KnightHit | KnightDying
     | Jump | CoinCollect | Warping | HitSpikes
-    | LevelStart
-
 let validAdjacents = 
     [
         "00111000";"00111110";"00001110";"00001000";"11111000";"11111111";"10001111";"10001000";
@@ -84,7 +87,7 @@ let getLevelModel levelMapTiles levelNumber startScore elapsed =
     
     let entryPortal = oneKind EntryPortal (0,0)
     Playing { 
-        events = [LevelStart;Warping]
+        events = [Warping]
         bubbles = []
         level = levelNumber
         blocks = adjacencyMapped
