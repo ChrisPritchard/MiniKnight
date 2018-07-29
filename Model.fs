@@ -1,7 +1,7 @@
 module Model
 
 type GameModel = 
-    | Title
+    | Title of highScore:int
     | Loading of 
         startTime:float * 
         level:int * 

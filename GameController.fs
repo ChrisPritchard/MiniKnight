@@ -67,6 +67,9 @@ let advanceGame (runState : RunState) =
     function
     | _ when runState.WasJustPressed Keys.Escape -> None
     | None -> 
+        let highScore = loadHighScore ()
+        Title highScore |> Some
+    | Some (Title _) when runState.WasJustPressed Keys.Enter ->
         Loading (elapsed, 1, maxLevel, 0) |> Some
     | Some (Loading (t, l, _, score)) when elapsed - t > timeToLoad ->
         getLevelModel levels.[l] l score runState.elapsed |> Some 
@@ -89,5 +92,6 @@ let advanceGame (runState : RunState) =
         |> OrcController.processOrcs runState
         |> processBubbles
         |> Playing |> Some
-    | Some (Victory _) when runState.WasJustPressed Keys.Enter -> Some Title
+    | Some (Victory (_, highScore)) when runState.WasJustPressed Keys.R -> 
+        Some <| Title highScore
     | other -> other

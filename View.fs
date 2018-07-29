@@ -3,6 +3,7 @@ module View
 open GameCore
 open Model
 open Microsoft.Xna.Framework
+open Microsoft.Xna.Framework
 
 let animSpeed = 100.
 let screenWidth, screenHeight = 800, 600
@@ -43,6 +44,7 @@ let assetsToLoad = [
     Sound ("walk2", "./Content/Sounds/Knight/walk2.wav")
     Sound ("hitSpikes", "./Content/Sounds/Spikes.wav")
     Sound ("warping", "./Content/Sounds/Portal.wav")
+    Song ("titleSong", "./Content/Music/menu.ogg")
     Song ("levelSong", "./Content/Music/Explorer_0.ogg")
     Song ("victorySong", "./Content/Music/victory.ogg")
 ]
@@ -204,6 +206,16 @@ let sounds elapsed =
     | HitSpikes -> 
         SoundEffect "hitSpikes")
 
+let getTitleView highScore =
+    seq {
+        yield Text ("default", "MINIKNIGHT", (screenWidth / 2, screenHeight / 2 - 100), Centre, 2., Color.White)
+        yield Text ("default", sprintf "Current High Score: %i pts" highScore, (screenWidth / 2, screenHeight / 2 - 20), Centre, 0.6, Color.White)
+        yield Text ("default", "Press 'ENTER' to Start", (screenWidth / 2, screenHeight / 2 + 60), Centre, 0.8, Color.White)
+        yield MappedImage ("knight", "MiniKnight_27", (10, screenHeight / 2 + 20, 150, 100), Color.White)
+        yield MappedImage ("knight", "MiniKnight_25", (screenWidth - 160, screenHeight / 2 + 20, 150, 100), Color.White)
+        yield Music "titleSong"
+    } |> Seq.toList
+
 let getLoadingView level maxLevel score =
     seq {
         yield Text ("default", sprintf "Loading level %i of %i" level maxLevel, (screenWidth / 2, screenHeight / 2 - 50), Centre, 0.6, Color.White)
@@ -259,16 +271,17 @@ let getVictoryView score highScore =
             yield Text ("default", "New High Score!", (screenWidth / 2, screenHeight / 2 + 30), Centre, 0.8, Color.White)
         else
             yield Text ("default", sprintf "Current High Score: %i pts" highScore, (screenWidth / 2, screenHeight / 2 + 30), Centre, 0.6, Color.White)
-        yield Text ("default", "Press 'ENTER' to return to title", (screenWidth / 2, screenHeight / 2 + 80), Centre, 0.6, Color.White)
+        yield Text ("default", "Press 'R' to return to title", (screenWidth / 2, screenHeight / 2 + 80), Centre, 0.6, Color.White)
         yield Music "victorySong"
     } |> Seq.toList
 
 let getView runState =
     function
+    | Title highScore ->
+        getTitleView highScore
     | Loading (_, level, max, score) ->
         getLoadingView level max score
     | Playing worldState ->
         getPlayingView runState worldState
     | Victory (score, isHighScore) ->
         getVictoryView score isHighScore
-    | _ -> []
