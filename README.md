@@ -13,6 +13,7 @@ __To run:__
 - Ensure you have the dotnet core sdk installed from here: <https://www.microsoft.com/net/download>
 - From the base directory of the repo, run the command __dotnet run__
     - If you encounter issues and are not on Windows, try the steps in the 'supported platforms' section below
+- It can also be opened in VS via the .sln - I've tested this on VS2017 Community 15.6.4. You will probably still need the SDK installed
 - To compile an exe (or platform equivalent) use __dotnet build -r [rid]__ where [rid] is the appropriate runtime identifier from here: <https://docs.microsoft.com/en-us/dotnet/core/rid-catalog>
 
 ## Acknowledgements
@@ -25,6 +26,7 @@ All code is my own, and available under Unilicense. I am using the following add
 - And the music (which is excellent): <https://opengameart.org/content/8-bit-explorer-theme>
 
 Additionally, I used ScreenToGif to create the screencapture: <https://github.com/NickeManarin/ScreenToGif>
+And the __coders crux__ font: <https://www.dafont.com/coders-crux.font>
 
 ## Supported platforms
 
