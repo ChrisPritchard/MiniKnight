@@ -45,5 +45,5 @@ let advanceGame runState =
                     worldState.knight.score 
                     runState.elapsed
         | Playing worldState -> 
-            handlePlayingState runState worldState
+            { worldState with events = [] } |> handlePlayingState runState
         | _ -> Some model

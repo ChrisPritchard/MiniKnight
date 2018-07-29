@@ -22,6 +22,12 @@ let assetsToLoad = [
     Texture ("spikes", "./Content/Sprites/spikes.png")
     TextureMap ("portalArrive", "./Content/Sprites/portalArrive.png", "./Content/Sprites/portalArrive-key.csv")
     TextureMap ("portalDepart", "./Content/Sprites/portalDepart.png", "./Content/Sprites/portalDepart-key.csv")
+    Sound ("block1", "./Content/Sounds/Shared/block1.wav")
+    Sound ("block2", "./Content/Sounds/Shared/block2.wav")
+    Sound ("block3", "./Content/Sounds/Shared/block3.wav")
+    Sound ("orcHit1", "./Content/Sounds/Orcs/hit1.wav")
+    Sound ("orcHit2", "./Content/Sounds/Orcs/hit2.wav")
+    Sound ("orcDie", "./Content/Sounds/Orcs/die.wav")
 ]
 
 let resolution = Windowed (screenWidth, screenHeight)
@@ -176,6 +182,14 @@ let getPlayingView runState worldState =
             yield Text ("default", "Press 'R' to try again", (screenWidth / 2, screenHeight / 2 + 90), Centre, 0.8, Color.White)
         | _ -> 
             yield Text ("default", sprintf "score: %i pts" knight.score, (20, screenHeight - 30), TopLeft, 0.5, Color.White)
+
+        let sounds =
+            worldState.events |> List.map (function            
+            | OrcBlocked | KnightBlocked -> Some <| SoundEffect (sprintf "block%i" (int elapsed % 3 + 1))
+            | OrcHit -> Some <| SoundEffect (sprintf "orcHit%i" (int elapsed % 2 + 1))
+            | OrcFalling -> Some <| SoundEffect "orcDie"
+            | _ -> None) |> List.choose id
+        yield! sounds
     } |> Seq.toList
 
 let getView runState model =

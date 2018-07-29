@@ -131,7 +131,7 @@ let testForStrickenOrc (kx, ky) direction elapsed (orcs : Orc list) =
     match orc with
     | Some o -> 
         match o.state with
-        | Guarding _ -> orcs, false
+        | Guarding _ -> orcs, Some OrcBlocked
         | _ ->
             orcs |> List.map (fun oi -> 
                 match oi with
@@ -139,8 +139,8 @@ let testForStrickenOrc (kx, ky) direction elapsed (orcs : Orc list) =
                     { o with 
                         health = o.health - 1
                         state = if o.health = 1 then Falling elapsed else o.state }
-                | _ -> oi), o.health = 1
-    | _ -> orcs, false
+                | _ -> oi), if o.health = 1 then Some OrcFalling else Some OrcHit
+    | _ -> orcs, None
 
 let roughlyEqual (fx, fy) (ix, iy) = 
     abs (fx - float ix) < 0.2 && abs (fy - float iy) < 0.2
@@ -148,7 +148,7 @@ let roughlyEqual (fx, fy) (ix, iy) =
 let processOnGround (runState: RunState) worldState =
     let knight = worldState.knight
     if strikeKeys |> runState.IsAnyPressed then
-        let (newOrcs, hasKill) = 
+        let (newOrcs, event) = 
             testForStrickenOrc 
                 knight.position 
                 knight.direction 
@@ -157,10 +157,11 @@ let processOnGround (runState: RunState) worldState =
         let newKnight = 
             { knight with 
                 state = Striking runState.elapsed
-                score = if hasKill then knight.score + killScore else knight.score }
+                score = match event with | Some OrcFalling -> knight.score + killScore | _ -> knight.score }
         { worldState with 
             knight = newKnight
-            orcs = newOrcs }
+            orcs = newOrcs
+            events = match event with Some e -> e::worldState.events | _ -> worldState.events }
     else 
         let walkCommand = getWalkCommand runState
         let direction = match walkCommand with Some dir -> dir | None -> knight.direction

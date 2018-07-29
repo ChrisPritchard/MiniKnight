@@ -13,6 +13,7 @@ and WorldState = {
     exitPortal: int * int
     orcs: Orc list
     knight: Knight
+    events: Event list
 } 
 and MapTile = | Block | Spikes | Coin | Orc | EntryPortal | ExitPortal
 and Orc = {
@@ -39,6 +40,8 @@ and KnightState =
     | Standing | Walking | Striking of startTime:float | Blocking
     | Dying of startTime:float | Dead
     | WarpingIn of startTime:float | WarpingOut of startTime:float
+and Event = 
+    | OrcBlocked | OrcHit | OrcFalling | KnightBlocked | KnightHit | KnightDying
 
 let validAdjacents = 
     [
@@ -72,6 +75,7 @@ let getLevelModel levelMapTiles levelNumber startScore elapsed =
     
     let entryPortal = oneKind EntryPortal (0,0)
     Playing { 
+        events = []
         level = levelNumber
         blocks = adjacencyMapped
         spikes = ofKind Spikes
