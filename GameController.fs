@@ -64,7 +64,7 @@ let advanceGame (runState : RunState) =
             worldState.knight.startScore 
             runState.elapsed
     | Some (Playing worldState) when hasWarpedOut runState worldState && worldState.level = maxLevel -> 
-        Some <| GameOver worldState.knight.score
+        Some <| Victory (worldState.knight.score, worldState.knight.score) // TODO load highScore
     | Some (Playing worldState) when hasWarpedOut runState worldState ->
         Loading (elapsed, worldState.level + 1, maxLevel, worldState.knight.score) |> Some
     | Some (Playing worldState) -> 
@@ -72,5 +72,6 @@ let advanceGame (runState : RunState) =
         |> KnightController.processKnight runState
         |> OrcController.processOrcs runState
         |> processBubbles
-        |> Playing |> Some            
+        |> Playing |> Some
+    | Some (Victory _) when runState.WasJustPressed Keys.Enter -> Some Title
     | other -> other

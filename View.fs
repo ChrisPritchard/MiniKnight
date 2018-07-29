@@ -44,6 +44,7 @@ let assetsToLoad = [
     Sound ("hitSpikes", "./Content/Sounds/Spikes.wav")
     Sound ("warping", "./Content/Sounds/Portal.wav")
     Song ("levelSong", "./Content/Music/Explorer_0.ogg")
+    Song ("victorySong", "./Content/Music/victory.ogg")
 ]
 
 let resolution = Windowed (screenWidth, screenHeight)
@@ -250,10 +251,24 @@ let getPlayingView runState worldState =
 
     } |> Seq.toList
 
+let getVictoryView score highScore =
+    seq {
+        yield Text ("default", "Victory!", (screenWidth / 2, screenHeight / 2 - 50), Centre, 1.5, Color.White)
+        yield Text ("default", sprintf "Your Score: %i pts" score, (screenWidth / 2, screenHeight / 2), Centre, 0.6, Color.White)
+        if score = highScore then
+            yield Text ("default", "New High Score!", (screenWidth / 2, screenHeight / 2 + 30), Centre, 0.8, Color.White)
+        else
+            yield Text ("default", sprintf "Current High Score: %i pts" highScore, (screenWidth / 2, screenHeight / 2 + 30), Centre, 0.6, Color.White)
+        yield Text ("default", "Press 'ENTER' to return to title", (screenWidth / 2, screenHeight / 2 + 80), Centre, 0.6, Color.White)
+        yield Music "victorySong"
+    } |> Seq.toList
+
 let getView runState =
     function
     | Loading (_, level, max, score) ->
         getLoadingView level max score
     | Playing worldState ->
         getPlayingView runState worldState
+    | Victory (score, isHighScore) ->
+        getVictoryView score isHighScore
     | _ -> []

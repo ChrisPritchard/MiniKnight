@@ -1,14 +1,16 @@
 module Model
 
 type GameModel = 
-    | Menu
+    | Title
     | Loading of 
         startTime:float * 
         level:int * 
         maxLevel:int * 
         currentScore:int
     | Playing of WorldState
-    | GameOver of score:int
+    | Victory of 
+        score:int * 
+        highScore:int
 and WorldState = {
     level: int
     blocks: (int * int * string) list
