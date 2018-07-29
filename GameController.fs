@@ -47,15 +47,14 @@ let advanceGame runState =
                 worldState.level 
                 worldState.knight.startScore 
                 runState.elapsed
-        | Playing worldState when hasWarpedOut runState worldState -> 
-            if worldState.level = maxLevel then
-                Some <| GameOver worldState.knight.score
-            else
-                Some <| getLevelModel 
-                    levels.[worldState.level + 1] 
-                    (worldState.level + 1)
-                    worldState.knight.score 
-                    runState.elapsed
+        | Playing worldState when hasWarpedOut runState worldState && worldState.level = maxLevel -> 
+            Some <| GameOver worldState.knight.score
+        | Playing worldState when hasWarpedOut runState worldState ->
+            Some <| getLevelModel 
+                levels.[worldState.level + 1] 
+                (worldState.level + 1)
+                worldState.knight.score 
+                runState.elapsed
         | Playing worldState -> 
             { worldState with events = [] }
             |> KnightController.processKnight runState
