@@ -41,7 +41,8 @@ and KnightState =
     | Dying of startTime:float | Dead
     | WarpingIn of startTime:float | WarpingOut of startTime:float
 and Event = 
-    | OrcBlocked | OrcHit | OrcFalling | KnightBlocked | KnightHit | KnightDying
+    | OrcSwing | OrcBlocked | OrcHit | OrcFalling
+    | KnightSwing | KnightBlocked | KnightHit | KnightDying
 
 let validAdjacents = 
     [

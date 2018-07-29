@@ -161,7 +161,10 @@ let processOnGround (runState: RunState) worldState =
         { worldState with 
             knight = newKnight
             orcs = newOrcs
-            events = match event with Some e -> e::worldState.events | _ -> worldState.events }
+            events = 
+                match event with 
+                | Some e -> e::KnightSwing::worldState.events 
+                | _ -> KnightSwing::worldState.events }
     else 
         let walkCommand = getWalkCommand runState
         let direction = match walkCommand with Some dir -> dir | None -> knight.direction
