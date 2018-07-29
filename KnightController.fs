@@ -51,11 +51,17 @@ let tryApplyVelocity verticalSpeed (x, y) worldState =
         | None -> (x, ny), Some verticalSpeed
 
 let checkForHorizontalBlocker (nx, y) direction = 
-    List.tryFind (fun (bx, by) -> 
-        by = y &&
-        (match direction with
-        | Left -> bx > nx - 1. && bx < nx
-        | Right -> nx < bx && nx + 1. > bx))
+    let (floorx, ceilx) = floor nx, ceil nx
+    let isInHorizontal by =
+        by = y ||
+        (by < y && (by + 1.) > y) ||
+        (by > y && (by - 1.) < y)
+
+    List.tryFind (fun (bx, by) ->
+        isInHorizontal by && 
+            match direction with
+            | Left -> bx = ceilx - 1.
+            | Right -> bx = floorx + 1.)
 
 let tryWalk direction (x, y) worldState =
     let nx = if direction = Left then x - walkSpeed else x + walkSpeed

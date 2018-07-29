@@ -228,6 +228,9 @@ let getPlayingView runState worldState =
                 yield SoundEffect "walk1"
             else if int elapsed % 300 = 0 then
                 yield SoundEffect "walk2"
+
+        yield Text ("default", sprintf "%f, %f" <|| worldState.knight.position, (20,20), TopLeft, 1., Color.White)
+
     } |> Seq.toList
 
 let getView runState model =
