@@ -51,7 +51,6 @@ let tryApplyVelocity verticalSpeed (x, y) worldState =
         | None -> (x, ny), Some verticalSpeed
 
 let checkForHorizontalBlocker (nx, y) direction = 
-    let (floorx, ceilx) = floor nx, ceil nx
     let isInHorizontal by =
         by = y ||
         (by < y && (by + 1.) > y) ||
