@@ -65,6 +65,7 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
     let mutable keyboardInfo = { pressed = []; keysDown = []; keysUp = [] }
     let mutable currentModel: 'TModel option = None
     let mutable currentView: ViewArtifact list = []
+    let mutable firstDrawComplete = false
 
     let mutable spriteBatch = Unchecked.defaultof<SpriteBatch>
 
@@ -185,13 +186,20 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
             mouse = mouseInfo
         }
         
-        currentModel <- updateModel runState currentModel
+        match currentModel with
+        | None -> 
+            currentModel <- updateModel runState currentModel
+        | Some _ when firstDrawComplete ->
+            currentModel <- updateModel runState currentModel
+        | _ -> ()
+            
         match currentModel with
         | None -> __.Exit()
         | Some model ->
             currentView <- getView runState model
 
     override __.Draw(_) =
+        firstDrawComplete <- true
         this.GraphicsDevice.Clear Color.White
         
         spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp)
