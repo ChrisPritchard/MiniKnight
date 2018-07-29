@@ -252,7 +252,7 @@ let getPlayingView runState worldState =
 
 let getView runState =
     function
-    | LoadingScreen (_, level, max, score) ->
+    | Loading (_, level, max, score) ->
         getLoadingView level max score
     | Playing worldState ->
         getPlayingView runState worldState

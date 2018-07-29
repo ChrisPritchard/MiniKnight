@@ -54,8 +54,8 @@ let advanceGame (runState : RunState) =
     function
     | _ when runState.WasJustPressed Keys.Escape -> None
     | None -> 
-        LoadingScreen (elapsed, 1, maxLevel, 0) |> Some
-    | Some (LoadingScreen (t, l, _, score)) when elapsed - t > timeToLoad ->
+        Loading (elapsed, 1, maxLevel, 0) |> Some
+    | Some (Loading (t, l, _, score)) when elapsed - t > timeToLoad ->
         getLevelModel levels.[l] l score runState.elapsed |> Some 
     | Some (Playing worldState) when hasReset runState worldState -> 
         Some <| getLevelModel 
@@ -66,7 +66,7 @@ let advanceGame (runState : RunState) =
     | Some (Playing worldState) when hasWarpedOut runState worldState && worldState.level = maxLevel -> 
         Some <| GameOver worldState.knight.score
     | Some (Playing worldState) when hasWarpedOut runState worldState ->
-        LoadingScreen (elapsed, worldState.level + 1, maxLevel, worldState.knight.score) |> Some
+        Loading (elapsed, worldState.level + 1, maxLevel, worldState.knight.score) |> Some
     | Some (Playing worldState) -> 
         { worldState with events = [] }
         |> KnightController.processKnight runState

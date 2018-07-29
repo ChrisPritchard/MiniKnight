@@ -2,7 +2,7 @@ module Model
 
 type GameModel = 
     | Menu
-    | LoadingScreen of 
+    | Loading of 
         startTime:float * 
         level:int * 
         maxLevel:int * 
