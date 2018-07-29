@@ -23,12 +23,6 @@ let getLevel num =
         | Some t -> Some (x, y, t |> snd)
         | _ -> None)) |> Seq.choose id |> Seq.toList
 
-let handlePlayingState runState worldState =
-    worldState
-    |> KnightController.processKnight runState
-    |> OrcController.processOrcs runState
-    |> Playing |> Some
-
 let maxLevel = 5
 let levels = [1..maxLevel] |> List.map (fun i -> (i, getLevel i)) |> Map.ofList
 
@@ -63,5 +57,8 @@ let advanceGame runState =
                     worldState.knight.score 
                     runState.elapsed
         | Playing worldState -> 
-            { worldState with events = [] } |> handlePlayingState runState
+            { worldState with events = [] }
+            |> KnightController.processKnight runState
+            |> OrcController.processOrcs runState
+            |> Playing |> Some            
         | _ -> Some model
