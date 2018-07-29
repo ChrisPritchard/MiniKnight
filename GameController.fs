@@ -5,7 +5,9 @@ open Model
 open View
 open Microsoft.Xna.Framework.Input
 open System.Drawing
+open System.IO
 
+let highScoreFile = "highscore.txt"
 let timeToLoad = 3000.
 let bubbleSpeed = 0.02
 let bubbleHeight = 1.
@@ -49,6 +51,17 @@ let processBubbles worldState =
                     let (_, y) = b.position
                     (b.startY - y) < bubbleHeight) }
 
+let loadHighScore () =
+    if File.Exists highScoreFile then
+        let text = File.ReadAllText highScoreFile
+        match System.Int32.TryParse text with
+        | true, v -> v
+        | _ -> 0
+    else 0
+
+let saveHighScore score =
+    File.WriteAllText (highScoreFile, string score)
+
 let advanceGame (runState : RunState) =
     let elapsed = runState.elapsed
     function
@@ -64,7 +77,10 @@ let advanceGame (runState : RunState) =
             worldState.knight.startScore 
             runState.elapsed
     | Some (Playing worldState) when hasWarpedOut runState worldState && worldState.level = maxLevel -> 
-        Some <| Victory (worldState.knight.score, worldState.knight.score) // TODO load highScore
+        let score = worldState.knight.score
+        let highScore = loadHighScore ()
+        if score > highScore then saveHighScore score |> ignore
+        Some <| Victory (score, max score highScore)
     | Some (Playing worldState) when hasWarpedOut runState worldState ->
         Loading (elapsed, worldState.level + 1, maxLevel, worldState.knight.score) |> Some
     | Some (Playing worldState) -> 

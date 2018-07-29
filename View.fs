@@ -208,7 +208,7 @@ let getLoadingView level maxLevel score =
     seq {
         yield Text ("default", sprintf "Loading level %i of %i" level maxLevel, (screenWidth / 2, screenHeight / 2 - 50), Centre, 0.6, Color.White)
         yield Text ("default", sprintf "Current Score: %i pts" score, (screenWidth / 2, screenHeight / 2 - 20), Centre, 0.6, Color.White)
-        yield Text ("default", "Get  Ready!", (screenWidth / 2, screenHeight / 2 + 30), Centre, 1.5, Color.White)
+        yield Text ("default", " Get Ready!", (screenWidth / 2, screenHeight / 2 + 30), Centre, 1.5, Color.White)
         yield Music "levelSong"
     } |> Seq.toList
 
