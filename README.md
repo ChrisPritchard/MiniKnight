@@ -2,7 +2,9 @@
 
 A pixel-art platformer where you must fight your way to the portal, collecting coins and slaying orcs along the way! Features five levels (each loaded from pixel bitmaps), sound effects, music, enemy AI etc. Somewhat difficult, but quite forgiving. Also includes high score functionality.
 
-![demo](./screencapture.gif)
+<p align="center">
+  ![demo](./screencapture.gif)
+</p>
 
 Coded in F# on dotnet core 2.1. Developed using VS Code 1.25.1 on Windows 10. Game loop engine is MonoGame 3.7
 
