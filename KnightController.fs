@@ -174,32 +174,74 @@ let testForStrickenOrc (kx, ky) direction elapsed (orcs : Orc list) =
 let roughlyEqual (fx, fy) (ix, iy) = 
     abs (fx - float ix) < 0.2 && abs (fy - float iy) < 0.2
 
+let processStrike (runState: RunState) worldState = 
+    let knight = worldState.knight
+    let (newOrcs, event) = 
+        testForStrickenOrc 
+            knight.position 
+            knight.direction 
+            runState.elapsed 
+            worldState.orcs
+    let newKnight = 
+        { knight with 
+            state = Striking runState.elapsed
+            score = match event with | Some OrcFalling -> knight.score + killScore | _ -> knight.score }
+    let bubbles =
+        match event with
+        | Some OrcFalling ->
+            (bubbleFromKill knight.position)::worldState.bubbles
+        | _ -> worldState.bubbles
+    { worldState with 
+        knight = newKnight
+        orcs = newOrcs
+        bubbles = bubbles
+        events = 
+            match event with 
+            | Some e -> e::KnightSwing::worldState.events 
+            | _ -> KnightSwing::worldState.events }
+
+let processWalk walkCommand runState worldState = 
+    let knight = worldState.knight
+    let (position, state, direction) = 
+        match walkCommand with
+        | Some dir -> tryWalk dir knight.position worldState, Walking, dir
+        | None -> knight.position, Standing, knight.direction
+
+    let hasHitCoin = checkForHorizontalTouch knight.position direction worldState.coins
+    let hasHitExit = roughlyEqual knight.position worldState.exitPortal
+    let newKnight = 
+        { knight with 
+            position = position
+            direction = direction
+            state = 
+                match hasHitExit with
+                | true -> WarpingOut runState.elapsed
+                | false -> state
+            score =
+                match hasHitCoin with
+                | Some _ -> knight.score + coinScore
+                | _ -> knight.score }
+
+    let coins, bubbles = 
+        match hasHitCoin with
+        | Some c -> 
+            let newBubble = bubbleFromCoin c
+            List.except [c] worldState.coins, newBubble::worldState.bubbles
+        | _ -> worldState.coins, worldState.bubbles
+    { worldState with 
+        knight = newKnight
+        coins = coins
+        bubbles = bubbles
+        events =
+            match hasHitCoin, hasHitExit with
+            | _, true -> Warping::worldState.events
+            | Some _, _ -> CoinCollect::worldState.events
+            | _ -> worldState.events }
+
 let processOnGround (runState: RunState) worldState =
     let knight = worldState.knight
     if strikeKeys |> runState.IsAnyPressed then
-        let (newOrcs, event) = 
-            testForStrickenOrc 
-                knight.position 
-                knight.direction 
-                runState.elapsed 
-                worldState.orcs
-        let newKnight = 
-            { knight with 
-                state = Striking runState.elapsed
-                score = match event with | Some OrcFalling -> knight.score + killScore | _ -> knight.score }
-        let bubbles =
-            match event with
-            | Some OrcFalling ->
-                (bubbleFromKill knight.position)::worldState.bubbles
-            | _ -> worldState.bubbles
-        { worldState with 
-            knight = newKnight
-            orcs = newOrcs
-            bubbles = bubbles
-            events = 
-                match event with 
-                | Some e -> e::KnightSwing::worldState.events 
-                | _ -> KnightSwing::worldState.events }
+        processStrike runState worldState
     else 
         let walkCommand = getWalkCommand runState
         let direction = match walkCommand with Some dir -> dir | None -> knight.direction
@@ -220,41 +262,7 @@ let processOnGround (runState: RunState) worldState =
                 knight = newKnight
                 events = Jump::worldState.events }
         else
-            let (position, state) = 
-                match walkCommand with
-                | Some dir -> tryWalk dir knight.position worldState, Walking
-                | None -> knight.position, Standing
-
-            let hasHitCoin = checkForHorizontalTouch knight.position direction worldState.coins
-            let hasHitExit = roughlyEqual knight.position worldState.exitPortal
-            let newKnight = 
-                { knight with 
-                    position = position
-                    direction = direction
-                    state = 
-                        match hasHitExit with
-                        | true -> WarpingOut runState.elapsed
-                        | false -> state
-                    score =
-                        match hasHitCoin with
-                        | Some _ -> knight.score + coinScore
-                        | _ -> knight.score }
-
-            let coins, bubbles = 
-                match hasHitCoin with
-                | Some c -> 
-                    let newBubble = bubbleFromCoin c
-                    List.except [c] worldState.coins, newBubble::worldState.bubbles
-                | _ -> worldState.coins, worldState.bubbles
-            { worldState with 
-                knight = newKnight
-                coins = coins
-                bubbles = bubbles
-                events =
-                    match hasHitCoin, hasHitExit with
-                    | _, true -> Warping::worldState.events
-                    | Some _, _ -> CoinCollect::worldState.events
-                    | _ -> worldState.events }
+            processWalk walkCommand runState worldState
 
 let processKnight runState worldState =
     let knight = worldState.knight
