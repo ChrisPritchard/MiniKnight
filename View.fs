@@ -273,6 +273,8 @@ let getVictoryView score highScore =
         else
             yield Text ("default", sprintf "Current High Score: %i pts" highScore, (screenWidth / 2, screenHeight / 2 + 30), Centre, 0.6, Color.White)
         yield Text ("default", "Press 'R' to return to title", (screenWidth / 2, screenHeight / 2 + 80), Centre, 0.6, Color.White)
+        yield MappedImage ("knight", "MiniKnight_25", (10, screenHeight / 2 + 20, 150, 100), Color.White)
+        yield MappedImage ("knight", "MiniKnight_27", (screenWidth - 160, screenHeight / 2 + 20, 150, 100), Color.White)
         yield Music "victorySong"
     } |> Seq.toList
 
