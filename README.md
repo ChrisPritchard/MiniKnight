@@ -26,6 +26,7 @@ All code is my own, and available under Unilicense. I am using the following add
 - And the music (which is excellent): <https://opengameart.org/content/8-bit-explorer-theme>
 
 Additionally, I used ScreenToGif to create the screencapture: <https://github.com/NickeManarin/ScreenToGif>
+
 And the __coders crux__ font: <https://www.dafont.com/coders-crux.font>
 
 ## Supported platforms
