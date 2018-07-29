@@ -31,6 +31,11 @@ let assetsToLoad = [
     Sound ("orcHit1", "./Content/Sounds/Orcs/hit1.wav")
     Sound ("orcHit2", "./Content/Sounds/Orcs/hit2.wav")
     Sound ("orcDie", "./Content/Sounds/Orcs/die.wav")
+    Sound ("knightHit1", "./Content/Sounds/Knight/hit1.wav")
+    Sound ("knightHit2", "./Content/Sounds/Knight/hit2.wav")
+    Sound ("knightHit3", "./Content/Sounds/Knight/hit3.wav")
+    Sound ("knightDie", "./Content/Sounds/Knight/die.wav")
+    Sound ("jump", "./Content/Sounds/Knight/jump.wav")
 ]
 
 let resolution = Windowed (screenWidth, screenHeight)
@@ -166,6 +171,7 @@ let sounds elapsed =
     | OrcBlocked | KnightBlocked -> Some <| SoundEffect (indexed "block" 3)
     | OrcHit -> Some <| SoundEffect (indexed "orcHit" 2)
     | OrcFalling -> Some <| SoundEffect "orcDie"
+    | Jump -> Some <| SoundEffect "jump"
     | _ -> None)
     >> List.choose id
 

@@ -43,6 +43,7 @@ and KnightState =
 and Event = 
     | OrcSwing | OrcBlocked | OrcHit | OrcFalling
     | KnightSwing | KnightBlocked | KnightHit | KnightDying
+    | Jump
 
 let validAdjacents = 
     [

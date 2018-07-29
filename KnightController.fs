@@ -181,7 +181,9 @@ let processOnGround (runState: RunState) worldState =
                     direction = direction
                     verticalSpeed = Some jumpSpeed
                     state = Walking }
-            { worldState with knight = newKnight }
+            { worldState with 
+                knight = newKnight
+                events = Jump::worldState.events }
         else
             let (position, state) = 
                 match walkCommand with
