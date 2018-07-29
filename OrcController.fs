@@ -6,7 +6,7 @@ open View
 
 let walkSpeed = 0.05
 let guardTime = 1000.
-let readyTime = 1000.
+let readyTime = 500.
 
 let checkForFloor (nx, y) direction blocks =
     let testy = int y + 1
@@ -39,23 +39,30 @@ let processOrc (runState : RunState) worldState knight (orc : Orc) =
 
     match orc.state with
     | Falling t when runState.elapsed - t > (animSpeed * float dyingFrames) ->
-        { orc with state = Slain }, knight
+        { orc with state = Slain }, knight, []
     | Guarding t when runState.elapsed - t > guardTime ->
-        { orc with state = if isInAttackRange then ReadyingAttack runState.elapsed else Patrolling }, knight
+        { orc with state = if isInAttackRange then ReadyingAttack runState.elapsed else Patrolling }, knight, []
     | ReadyingAttack t when runState.elapsed - t > readyTime ->
-        { orc with state = if isInAttackRange then Attacking runState.elapsed else Patrolling }, knight
-    | Attacking t when runState.elapsed - t > (animSpeed * float strikeFrames) ->
         let newKnight = 
             if isInAttackRange && knight.state <> Blocking then
                 { knight with 
                     health = knight.health - 1
                     state = if knight.health = 1 then Dying runState.elapsed else knight.state }
             else knight
-        { orc with state = Patrolling }, newKnight
+        let newEvents = 
+            if isInAttackRange then
+                match newKnight.state with
+                | Blocking -> [OrcSwing;KnightBlocked]
+                | Dying _ -> [OrcSwing;KnightDying]
+                | _ -> [OrcSwing;KnightHit]
+            else []
+        { orc with state = if isInAttackRange then Attacking runState.elapsed else Patrolling }, newKnight, newEvents
+    | Attacking t when runState.elapsed - t > (animSpeed * float strikeFrames) ->
+        { orc with state = Patrolling }, knight, []
     | Falling _ 
-    | ReadyingAttack _ | Guarding _ | Attacking _ | Slain -> orc, knight
+    | ReadyingAttack _ | Guarding _ | Attacking _ | Slain -> orc, knight, []
     | _ when isInAttackRange ->
-        { orc with state = Guarding runState.elapsed }, knight
+        { orc with state = Guarding runState.elapsed }, knight, []
     | _ ->
         let x, y = orc.position
         let nx = if orc.direction = Left then x - walkSpeed else x + walkSpeed
@@ -72,12 +79,13 @@ let processOrc (runState : RunState) worldState knight (orc : Orc) =
         { orc  with 
             direction = direction
             position = position
-            state = Patrolling }, knight
+            state = Patrolling }, knight, []
 
 let processOrcs runState worldState =
-    let knight, orcs = List.fold (fun (k,ol) o -> 
-        let newOrc, knight = processOrc runState worldState k o
-        (knight, newOrc::ol)) (worldState.knight, []) worldState.orcs
+    let knight, orcs, events = List.fold (fun (k,ol,ev) o -> 
+        let newOrc, knight, newEvents = processOrc runState worldState k o
+        (knight, newOrc::ol, newEvents @ ev)) (worldState.knight, [], []) worldState.orcs
     { worldState with 
         knight = knight
-        orcs = orcs }
+        orcs = orcs
+        events = events @ worldState.events }
