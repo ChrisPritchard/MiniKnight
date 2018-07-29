@@ -171,9 +171,6 @@ let testForStrickenOrc (kx, ky) direction elapsed (orcs : Orc list) =
                 | _ -> oi), if o.health = 1 then Some OrcFalling else Some OrcHit
     | _ -> orcs, None
 
-let roughlyEqual (fx, fy) (ix, iy) = 
-    abs (fx - float ix) < 0.2 && abs (fy - float iy) < 0.2
-
 let processStrike (runState: RunState) worldState = 
     let knight = worldState.knight
     let (newOrcs, event) = 
@@ -208,7 +205,10 @@ let processWalk walkCommand runState worldState =
         | None -> knight.position, Standing, knight.direction
 
     let hasHitCoin = checkForHorizontalTouch knight.position direction worldState.coins
+    let roughlyEqual (fx, fy) (ix, iy) = 
+        abs (fx - float ix) < 0.2 && abs (fy - float iy) < 0.2
     let hasHitExit = roughlyEqual knight.position worldState.exitPortal
+
     let newKnight = 
         { knight with 
             position = position
