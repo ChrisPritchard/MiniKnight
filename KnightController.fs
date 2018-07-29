@@ -123,8 +123,9 @@ let processInAir velocity runState worldState =
         knight = newKnight
         coins = coins
         events =
-            match hasHitSpikes with
-            | Some _ -> KnightDying::worldState.events
+            match hasHitCoin, hasHitSpikes with
+            | _, Some _ -> HitSpikes::KnightDying::worldState.events
+            | Some _, _ -> CoinCollect::worldState.events
             | _ -> worldState.events }
 
 let testForStrickenOrc (kx, ky) direction elapsed (orcs : Orc list) =
@@ -217,7 +218,12 @@ let processOnGround (runState: RunState) worldState =
                 | _ -> worldState.coins
             { worldState with 
                 knight = newKnight
-                coins = coins }
+                coins = coins
+                events =
+                    match hasHitCoin, hasHitExit with
+                    | _, true -> Warping::worldState.events
+                    | Some _, _ -> CoinCollect::worldState.events
+                    | _ -> worldState.events }
 
 let processKnight runState worldState =
     let knight = worldState.knight

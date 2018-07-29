@@ -22,6 +22,9 @@ let assetsToLoad = [
     Texture ("spikes", "./Content/Sprites/spikes.png")
     TextureMap ("portalArrive", "./Content/Sprites/portalArrive.png", "./Content/Sprites/portalArrive-key.csv")
     TextureMap ("portalDepart", "./Content/Sprites/portalDepart.png", "./Content/Sprites/portalDepart-key.csv")
+    Sound ("coin1", "./Content/Sounds/Coins/coin.wav")
+    Sound ("coin2", "./Content/Sounds/Coins/coin2.wav")
+    Sound ("coin3", "./Content/Sounds/Coins/coin3.wav")
     Sound ("block1", "./Content/Sounds/Shared/block1.wav")
     Sound ("block2", "./Content/Sounds/Shared/block2.wav")
     Sound ("block3", "./Content/Sounds/Shared/block3.wav")
@@ -36,6 +39,8 @@ let assetsToLoad = [
     Sound ("knightHit3", "./Content/Sounds/Knight/hit3.wav")
     Sound ("knightDie", "./Content/Sounds/Knight/die.wav")
     Sound ("jump", "./Content/Sounds/Knight/jump.wav")
+    Sound ("hitSpikes", "./Content/Sounds/Spikes.wav")
+    Sound ("warping", "./Content/Sounds/Portal.wav")
 ]
 
 let resolution = Windowed (screenWidth, screenHeight)
@@ -180,7 +185,13 @@ let sounds elapsed =
     | KnightHit -> 
         SoundEffect <| indexed "knightHit" 3
     | KnightDying -> 
-        SoundEffect "knightDie")
+        SoundEffect "knightDie"
+    | CoinCollect ->
+        SoundEffect <| indexed "coin" 3
+    | Warping -> 
+        SoundEffect "warping"
+    | HitSpikes -> 
+        SoundEffect "hitSpikes")
 
 let getPlayingView runState worldState =
     let elapsed = runState.elapsed
