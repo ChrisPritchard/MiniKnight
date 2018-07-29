@@ -43,6 +43,7 @@ let assetsToLoad = [
     Sound ("walk2", "./Content/Sounds/Knight/walk2.wav")
     Sound ("hitSpikes", "./Content/Sounds/Spikes.wav")
     Sound ("warping", "./Content/Sounds/Portal.wav")
+    Song ("levelSong", "./Content/Music/Explorer_0.ogg")
 ]
 
 let resolution = Windowed (screenWidth, screenHeight)
@@ -193,7 +194,9 @@ let sounds elapsed =
     | Warping -> 
         SoundEffect "warping"
     | HitSpikes -> 
-        SoundEffect "hitSpikes")
+        SoundEffect "hitSpikes"
+    | LevelStart ->
+        Music "levelSong")
 
 let getPlayingView runState worldState =
     let elapsed = runState.elapsed

@@ -6,12 +6,14 @@ open Microsoft.Xna.Framework
 open Microsoft.Xna.Framework.Graphics;
 open Microsoft.Xna.Framework.Input;
 open Microsoft.Xna.Framework.Audio
+open Microsoft.Xna.Framework.Media
 
 type Loadable =
 | Texture of key:string * path:string
 | TextureMap of key:string * texturePath:string * keyPath:string
 | Font of key:string * path:string
 | Sound of key:string * path:string
+| Song of key:string * path:string
 
 type Origin = | TopLeft | Centre
 
@@ -20,6 +22,7 @@ type ViewArtifact =
 | MappedImage of assetKey:string * mapKey:string * destRect: (int*int*int*int) * color:Color
 | Text of assetKey:string * text:string * position:(int*int) * origin:Origin * scale:float * color:Color
 | SoundEffect of string
+| Music of string
 
 type Resolution =
 | Windowed of int * int
@@ -30,6 +33,7 @@ type private Content =
 | TextureMapAsset of Texture2D * Map<string, Rectangle>
 | FontAsset of SpriteFont
 | SoundAsset of SoundEffect
+| MusicAsset of Song
 
 type RunState = {
     elapsed: float
@@ -137,6 +141,14 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
             | _ -> sprintf "Asset was not a SoundEffect: %s" assetKey |> failwith
         sound.Play () |> ignore
 
+    let playMusic assetKey =
+        let song = 
+            match Map.tryFind assetKey assets with
+            | Some (MusicAsset s) -> s
+            | None -> sprintf "Missing asset: %s" assetKey |> failwith
+            | _ -> sprintf "Asset was not a Song: %s" assetKey |> failwith
+        MediaPlayer.Play(song)
+
     override __.LoadContent() = 
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
         assets <- 
@@ -158,7 +170,10 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
                     key, this.Content.Load<SpriteFont> path |> FontAsset
                 | Sound (key, path) -> 
                     use stream = File.OpenRead path
-                    key, SoundEffect.FromStream stream |> SoundAsset)
+                    key, SoundEffect.FromStream stream |> SoundAsset
+                | Song (key, path) ->
+                    let uri = new Uri (path, UriKind.RelativeOrAbsolute)
+                    key, Song.FromUri (key, uri) |> MusicAsset) 
             |> Map.ofList
 
     override __.Update(gameTime) =
@@ -187,6 +202,7 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
                 | Image (a,d,c) -> drawImage spriteBatch (a,d) c
                 | MappedImage (a,m,d,c) -> drawMappedImage spriteBatch (a,m,d) c
                 | Text (a,t,p,o,s,c) -> drawText spriteBatch (a,t,p,o,s) c
-                | SoundEffect s -> playSound s)
+                | SoundEffect s -> playSound s
+                | Music s -> playMusic s)
 
         spriteBatch.End()

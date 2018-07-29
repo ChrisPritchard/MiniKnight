@@ -44,6 +44,7 @@ and Event =
     | OrcSwing | OrcBlocked | OrcHit | OrcFalling
     | KnightSwing | KnightBlocked | KnightHit | KnightDying
     | Jump | CoinCollect | Warping | HitSpikes
+    | LevelStart
 
 let validAdjacents = 
     [
@@ -77,7 +78,7 @@ let getLevelModel levelMapTiles levelNumber startScore elapsed =
     
     let entryPortal = oneKind EntryPortal (0,0)
     Playing { 
-        events = [Warping]
+        events = [LevelStart;Warping]
         level = levelNumber
         blocks = adjacencyMapped
         spikes = ofKind Spikes
