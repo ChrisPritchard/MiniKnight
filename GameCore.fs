@@ -153,7 +153,8 @@ type GameLoop<'TModel> (resolution, assetsToLoad, updateModel, getView)
         | Some s when s = song -> ()
         | _ ->
             currentSong <- Some song
-            MediaPlayer.Play(song)
+            MediaPlayer.Play (song)
+            MediaPlayer.IsRepeating <- true
 
     override __.LoadContent() = 
         spriteBatch <- new SpriteBatch(this.GraphicsDevice)
