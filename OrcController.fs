@@ -13,7 +13,6 @@ let checkForFloor (nx, y) direction blocks =
     let testx = if direction = Left then floor nx |> int else ceil nx |> int
     blocks |> List.exists (fun (bx, by, _) -> (bx, by) = (testx, testy))
 
-
 let checkForWall (nx, y) direction = 
     List.exists (fun (bx, by, _) -> 
         let fbx = float bx

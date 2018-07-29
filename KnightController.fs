@@ -3,7 +3,6 @@ module KnightController
 open GameCore
 open Model
 open View
-open CollisionDetection
 open Microsoft.Xna.Framework.Input
 
 let walkSpeed = 0.15
@@ -20,33 +19,55 @@ let jumpKeys = [Keys.W;Keys.Space]
 let strikeKeys = [Keys.LeftControl;Keys.RightControl]
 let blockKeys = [Keys.LeftAlt;Keys.RightAlt]
 
-let tryApplyVelocity verticalSpeed (x, y) blocks =
+let private checkForVerticalBlocker (x, ny) isFalling =
+    let (floory, ceily) = floor ny, ceil ny
+    let isInVertical bx =
+        bx = x ||
+        (bx < x && (bx + 1.) > x) ||
+        (bx > x && (bx - 1.) < x)
+
+    List.tryFind (fun (bx, by) ->
+        isInVertical bx && 
+            match isFalling with
+            | false -> by = ceily - 1.
+            | true -> by = floory + 1.)
+
+let tryApplyVelocity verticalSpeed (x, y) worldState =
     let ny = y + verticalSpeed
-    let blocks = blocks |> List.map (fun (bx, by, _) -> (bx, by))
+    let blockers = 
+        [
+            worldState.blocks |> List.map (fun (bx, by, _) -> (float bx, float by));
+            worldState.orcs |> List.filter (fun o -> o.state <> Slain) |> List.map (fun o -> o.position)
+        ] |> List.concat
     if verticalSpeed < 0. then
-        let ceiling = tryFindCollision (x, ny) blocks North
+        let ceiling = checkForVerticalBlocker (x, ny) false blockers
         match ceiling with
         | Some (_, by) -> (x, float by + 1.), Some 0.
         | None -> (x, ny), Some verticalSpeed
     else
-        let floor = tryFindCollision (x, ny) blocks South
+        let floor = checkForVerticalBlocker (x, ny) true blockers
         match floor with
         | Some (_, by) -> (x, float by - 1.), None
         | None -> (x, ny), Some verticalSpeed
 
-let tryWalk direction (x, y) blocks =
+let checkForHorizontalBlocker (nx, y) direction = 
+    List.tryFind (fun (bx, by) -> 
+        by = y &&
+        (match direction with
+        | Left -> bx > nx - 1. && bx < nx
+        | Right -> nx < bx && nx + 1. > bx))
+
+let tryWalk direction (x, y) worldState =
     let nx = if direction = Left then x - walkSpeed else x + walkSpeed
-    let blocks = blocks |> List.map (fun (bx, by, _) -> (bx, by))
-    if direction = Left then
-        let wall = tryFindCollision (nx, y) blocks West
-        match wall with
-        | Some (bx, _) -> (float bx + 1., y)
-        | None -> (nx, y)
-    else
-        let wall = tryFindCollision (nx, y) blocks East
-        match wall with
-        | Some (bx, _) -> (float bx - 1., y)
-        | None -> (nx, y)
+    let blockers = 
+        [
+            worldState.blocks |> List.map (fun (bx, by, _) -> (float bx, float by));
+            worldState.orcs |> List.filter (fun o -> o.state <> Slain) |> List.map (fun o -> o.position)
+        ] |> List.concat
+    match checkForHorizontalBlocker (nx, y) direction blockers with
+    | Some (bx, _) when direction = Left -> (float bx + 1., y)
+    | Some (bx, _) when direction = Right -> (float bx - 1., y)
+    | _ -> (nx, y)
 
 let getWalkCommand (runState: RunState) =
     let left = if runState.IsAnyPressed walkLeftKeys then Some Left else None
@@ -55,20 +76,31 @@ let getWalkCommand (runState: RunState) =
     | [dir] -> Some dir
     | _ -> None
 
+let checkForHorizontalTouch (x, y) direction =
+    List.map (fun (x, y) -> float x, float y) 
+    >> checkForHorizontalBlocker (x, y) direction
+    >> Option.bind (fun (fx, fy) -> Some (int fx, int fy))
+
+let checkForVerticalTouch (x, y) =
+    List.map (fun (x, y) -> float x, float y) 
+    >> fun list -> [checkForVerticalBlocker (x, y) true list; checkForVerticalBlocker (x, y) false list]
+    >> List.tryPick id
+    >> Option.bind (fun (fx, fy) -> Some (int fx, int fy))
+
 let processInAir velocity runState worldState = 
     let knight = worldState.knight
     let walkCommand = getWalkCommand runState
     let direction = match walkCommand with Some dir -> dir | None -> knight.direction
 
     let nv = min (velocity + gravityStrength) terminalVelocity
-    let (positionAfterVertical, verticalSpeed) = tryApplyVelocity nv knight.position worldState.blocks
+    let (positionAfterVertical, verticalSpeed) = tryApplyVelocity nv knight.position worldState
     let finalPosition = 
         match walkCommand with 
-        | Some dir -> tryWalk dir positionAfterVertical worldState.blocks
+        | Some dir -> tryWalk dir positionAfterVertical worldState
         | None -> positionAfterVertical
 
-    let hasHitSpikes = [North;South] |> List.tryPick (tryFindCollision finalPosition worldState.spikes)
-    let hasHitCoin = [North;South] |> List.tryPick (tryFindCollision finalPosition worldState.coins)
+    let hasHitSpikes = checkForVerticalTouch finalPosition worldState.spikes
+    let hasHitCoin = checkForVerticalTouch finalPosition worldState.coins
     let newKnight = 
         { knight with 
             position = finalPosition
@@ -149,11 +181,10 @@ let processOnGround (runState: RunState) worldState =
         else
             let (position, state) = 
                 match walkCommand with
-                | Some dir -> tryWalk dir knight.position worldState.blocks, Walking
+                | Some dir -> tryWalk dir knight.position worldState, Walking
                 | None -> knight.position, Standing
 
-            let coinDir = match direction with Left -> West | _ -> East
-            let hasHitCoin = tryFindCollision knight.position worldState.coins coinDir
+            let hasHitCoin = checkForHorizontalTouch knight.position direction worldState.coins
             let hasHitExit = roughlyEqual knight.position worldState.exitPortal
             let newKnight = 
                 { knight with 
@@ -177,25 +208,23 @@ let processOnGround (runState: RunState) worldState =
 let processKnight runState worldState =
     let knight = worldState.knight
     match knight.state with
-    | WarpingIn startTime when runState.elapsed - startTime < warpTime ->
+    | WarpingIn t when runState.elapsed - t < warpTime ->
         worldState
-    | Dead | WarpingOut _ ->
-        worldState
-    | Dying startTime when runState.elapsed - startTime < (animSpeed * float dyingFrames) ->
+    | Dying t when runState.elapsed - t < (animSpeed * float dyingFrames) ->
         worldState
     | Dying _ ->
         { worldState with knight = { worldState.knight with state = Dead } }
-    | Striking startTime when runState.elapsed - startTime < (animSpeed * float strikeFrames) ->
-        worldState
-    | Striking _ ->
+    | Striking t when runState.elapsed - t > (animSpeed * float strikeFrames) ->
         let newKnight = { knight with state = Standing }
         { worldState with knight = newKnight }
+    | Dead | WarpingOut _ | Striking _ ->
+        worldState
     | _ ->
         match knight.verticalSpeed with
         | Some velocity ->
             processInAir velocity runState worldState
         | None ->
-            let (_,gravityEffect) = tryApplyVelocity gravityStrength knight.position worldState.blocks
+            let (_,gravityEffect) = tryApplyVelocity gravityStrength knight.position worldState
             match gravityEffect with
             | Some v ->
                 let newKnight = { knight with verticalSpeed = Some v }
