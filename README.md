@@ -6,14 +6,25 @@ A pixel-art platformer where you must fight your way to the portal, collecting c
     <img alt="demo capture gif" src="./screencapture.gif">
 </p>
 
-Coded in F# on dotnet core 2.1. Developed using VS Code 1.25.1 on Windows 10. Game loop engine is MonoGame 3.7
+Coded in __F#__ on dotnet core 2.1. Developed using VS Code 1.25.1 on Windows 10. Game loop engine is MonoGame 3.7
 
-To run:
+__To run:__
 
 - Ensure you have the dotnet core sdk installed from here: <https://www.microsoft.com/net/download>
 - From the base directory of the repo, run the command __dotnet run__
     - If you encounter issues and are not on Windows, try the steps in the 'supported platforms' section below
 - To compile an exe (or platform equivalent) use __dotnet build -r [rid]__ where [rid] is the appropriate runtime identifier from here: <https://docs.microsoft.com/en-us/dotnet/core/rid-catalog>
+
+## Acknowledgements
+
+All code is my own, and available under Unilicense. I am using the following additional assets, all sourced from <https://opengameart.org>:
+
+- The Knight and Orc frames: <https://opengameart.org/content/mini-knight>
+- The stone floors and spikes: <https://opengameart.org/content/castle-platformer>
+- All the sound effects: <https://opengameart.org/content/rpg-sound-pack>
+- And the music (which is excellent): <https://opengameart.org/content/8-bit-explorer-theme>
+
+Additionally, I used ScreenToGif to create the screencapture: <https://github.com/NickeManarin/ScreenToGif>
 
 ## Supported platforms
 
