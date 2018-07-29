@@ -158,6 +158,13 @@ let testForStrickenOrc (kx, ky) direction elapsed (orcs : Orc list) =
 let roughlyEqual (fx, fy) (ix, iy) = 
     abs (fx - float ix) < 0.2 && abs (fy - float iy) < 0.2
 
+let bubbleFromCoin (x, y) = 
+    {
+        text = sprintf "+ %i pts" coinScore
+        startY = float y
+        position = float x, float y
+    }
+
 let processOnGround (runState: RunState) worldState =
     let knight = worldState.knight
     if strikeKeys |> runState.IsAnyPressed then
@@ -218,13 +225,16 @@ let processOnGround (runState: RunState) worldState =
                         | Some _ -> knight.score + coinScore
                         | _ -> knight.score }
 
-            let coins = 
+            let coins, bubbles = 
                 match hasHitCoin with
-                | Some c -> List.except [c] worldState.coins
-                | _ -> worldState.coins
+                | Some c -> 
+                    let newBubble = bubbleFromCoin c
+                    List.except [c] worldState.coins, newBubble::worldState.bubbles
+                | _ -> worldState.coins, worldState.bubbles
             { worldState with 
                 knight = newKnight
                 coins = coins
+                bubbles = bubbles
                 events =
                     match hasHitCoin, hasHitExit with
                     | _, true -> Warping::worldState.events

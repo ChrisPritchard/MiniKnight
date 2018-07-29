@@ -6,6 +6,9 @@ open View
 open Microsoft.Xna.Framework.Input
 open System.Drawing
 
+let bubbleSpeed = 0.02
+let bubbleHeight = 1.
+
 let mapKey = [
     (Color.FromArgb(128, 128, 128), Block)
     (Color.FromArgb(255, 0, 0), Spikes)
@@ -34,6 +37,17 @@ let hasWarpedOut (runState : RunState) worldState =
     | WarpingOut t when runState.elapsed - t > warpTime -> true 
     | _ -> false
 
+let processBubbles worldState = 
+    { worldState with 
+        bubbles =
+            worldState.bubbles 
+                |> List.map (fun b -> 
+                    let (x, y) = b.position
+                    { b with position = x, y - bubbleSpeed })
+                |> List.filter (fun b -> 
+                    let (_, y) = b.position
+                    (b.startY - y) < bubbleHeight) }
+
 let advanceGame runState =
     function
     | None -> 
@@ -59,5 +73,6 @@ let advanceGame runState =
             { worldState with events = [] }
             |> KnightController.processKnight runState
             |> OrcController.processOrcs runState
+            |> processBubbles
             |> Playing |> Some            
         | _ -> Some model

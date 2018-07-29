@@ -172,6 +172,13 @@ let getKnightColour knight elapsed =
         new Color (Color.White, float32 <| 1. - a)
     | _ -> Color.White
 
+let bubbles (kx, ky) =
+     let bw, bh = float blockWidth, float blockHeight
+     List.map (fun b -> 
+        let x, y = b.position
+        let relX, relY = int <| x * bw - (kx * bw), int <| y * bh - (ky * bh)
+        Text ("default", b.text, (centreX + relX, centreY + relY), Centre, 0.5, Color.White))
+
 let sounds elapsed = 
     let indexed key max = sprintf "%s%i" key <| int elapsed % max + 1
     List.map (function            
@@ -216,6 +223,8 @@ let getPlayingView runState worldState =
         let rect = getKnightRect frame
         let colour = getKnightColour knight elapsed
         yield MappedImage ("knight", frame, rect, colour)
+
+        yield! bubbles knightPos worldState.bubbles
 
         match knight.state with
         | Dead ->

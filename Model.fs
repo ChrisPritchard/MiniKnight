@@ -13,6 +13,7 @@ and WorldState = {
     exitPortal: int * int
     orcs: Orc list
     knight: Knight
+    bubbles: Bubble list
     events: Event list
 } 
 and MapTile = | Block | Spikes | Coin | Orc | EntryPortal | ExitPortal
@@ -40,6 +41,11 @@ and KnightState =
     | Standing | Walking | Striking of startTime:float | Blocking
     | Dying of startTime:float | Dead
     | WarpingIn of startTime:float | WarpingOut of startTime:float
+and Bubble = {
+    startY: float
+    position: float * float
+    text: string
+}
 and Event = 
     | OrcSwing | OrcBlocked | OrcHit | OrcFalling
     | KnightSwing | KnightBlocked | KnightHit | KnightDying
@@ -79,6 +85,7 @@ let getLevelModel levelMapTiles levelNumber startScore elapsed =
     let entryPortal = oneKind EntryPortal (0,0)
     Playing { 
         events = [LevelStart;Warping]
+        bubbles = []
         level = levelNumber
         blocks = adjacencyMapped
         spikes = ofKind Spikes
