@@ -8,6 +8,13 @@ A pixel-art platformer where you must fight your way to the portal, collecting c
 
 Coded in F# on dotnet core 2.1. Developed using VS Code 1.25.1 on Windows 10. Game loop engine is MonoGame 3.7
 
+To run:
+
+- Ensure you have the dotnet core sdk installed from here: <https://www.microsoft.com/net/download>
+- From the base directory of the repo, run the command __dotnet run__
+    - If you encounter issues and are not on Windows, try the steps in the 'supported platforms' section below
+- To compile an exe (or platform equivalent) use __dotnet build -r [rid]__ where [rid] is the appropriate runtime identifier from here: <https://docs.microsoft.com/en-us/dotnet/core/rid-catalog>
+
 ## Supported platforms
 
 Being dotnet core 2.1, it should work on all platforms that supports (Windows, Linux, Mac). Tested (and largely coded on) Windows 10. A full list of dotnet core supported platforms can be found from here: <https://github.com/dotnet/core/blob/master/release-notes/2.1/2.1-supported-os.md>
