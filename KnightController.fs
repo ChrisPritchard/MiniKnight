@@ -60,8 +60,8 @@ let checkForHorizontalBlocker (nx, y) direction =
     List.tryFind (fun (bx, by) ->
         isInHorizontal by && 
             match direction with
-            | Left -> bx = ceilx - 1.
-            | Right -> bx = floorx + 1.)
+            | Left -> bx >= nx - 1. && bx < nx
+            | Right -> nx + 1. >= bx && bx > nx)
 
 let tryWalk direction (x, y) worldState =
     let nx = if direction = Left then x - walkSpeed else x + walkSpeed
