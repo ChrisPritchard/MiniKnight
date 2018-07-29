@@ -92,6 +92,20 @@ let checkForVerticalTouch (x, y) =
     >> List.tryPick id
     >> Option.bind (fun (fx, fy) -> Some (int fx, int fy))
 
+let bubbleFromCoin (x, y) = 
+    {
+        text = sprintf "+ %i pts" coinScore
+        startY = float y
+        position = float x, float y
+    }
+
+let bubbleFromKill (x, y) = 
+    {
+        text = sprintf "+ %i pts" killScore
+        startY = y
+        position = x, y
+    }
+
 let processInAir velocity runState worldState = 
     let knight = worldState.knight
     let walkCommand = getWalkCommand runState
@@ -120,13 +134,16 @@ let processInAir velocity runState worldState =
                 | Some _ -> Dying runState.elapsed 
                 | _ -> Walking }
 
-    let coins = 
+    let coins, bubbles = 
         match hasHitCoin with
-        | Some c -> List.except [c] worldState.coins
-        | _ -> worldState.coins
+        | Some c -> 
+            let newBubble = bubbleFromCoin c
+            List.except [c] worldState.coins, newBubble::worldState.bubbles
+        | _ -> worldState.coins, worldState.bubbles
     { worldState with 
         knight = newKnight
         coins = coins
+        bubbles = bubbles
         events =
             match hasHitCoin, hasHitSpikes with
             | _, Some _ -> HitSpikes::KnightDying::worldState.events
@@ -157,13 +174,6 @@ let testForStrickenOrc (kx, ky) direction elapsed (orcs : Orc list) =
 let roughlyEqual (fx, fy) (ix, iy) = 
     abs (fx - float ix) < 0.2 && abs (fy - float iy) < 0.2
 
-let bubbleFromCoin (x, y) = 
-    {
-        text = sprintf "+ %i pts" coinScore
-        startY = float y
-        position = float x, float y
-    }
-
 let processOnGround (runState: RunState) worldState =
     let knight = worldState.knight
     if strikeKeys |> runState.IsAnyPressed then
@@ -177,9 +187,15 @@ let processOnGround (runState: RunState) worldState =
             { knight with 
                 state = Striking runState.elapsed
                 score = match event with | Some OrcFalling -> knight.score + killScore | _ -> knight.score }
+        let bubbles =
+            match event with
+            | Some OrcFalling ->
+                (bubbleFromKill knight.position)::worldState.bubbles
+            | _ -> worldState.bubbles
         { worldState with 
             knight = newKnight
             orcs = newOrcs
+            bubbles = bubbles
             events = 
                 match event with 
                 | Some e -> e::KnightSwing::worldState.events 
