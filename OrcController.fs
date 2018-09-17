@@ -35,7 +35,9 @@ let checkForEnemy (x, y) direction (kx, ky) =
     | Right -> x < kx && x + 1.5 > kx)
 
 let processOrc (runState : RunState) worldState knight (orc : Orc) =
-    let isInAttackRange = checkForEnemy orc.position orc.direction worldState.knight.position
+    let isInAttackRange = 
+        knight.state <> Dead &&
+        checkForEnemy orc.position orc.direction worldState.knight.position
 
     match orc.state with
     | Falling t when runState.elapsed - t > (animSpeed * float dyingFrames) ->
