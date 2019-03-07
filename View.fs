@@ -63,7 +63,6 @@ let relRectForStatic (x, y) (relX, relY) =
     let relX, relY = x * blockWidth - relX, y * blockHeight - relY
     centreX + relX, centreY + relY, blockWidth, blockHeight
 
-
 let getOrcRect frame (x,y) = 
     let strikeWidth = float blockWidth * 1.5 |> int
     let blockingWidth = float blockWidth * 0.8 |> int
