@@ -8,6 +8,7 @@ open System.Drawing
 open System.IO
 
 let highScoreFile = "highscore.txt"
+let checkpointFile = "checkpoint.txt"
 let timeToLoad = 3000.
 let bubbleSpeed = 0.02
 let bubbleHeight = 1.
@@ -59,8 +60,19 @@ let loadHighScore () =
         | _ -> 0
     else 0
 
+let loadCheckpoint () =
+    if File.Exists checkpointFile then
+        let text = File.ReadAllText checkpointFile
+        match System.Int32.TryParse text with
+        | true, v -> v
+        | _ -> 1
+    else 1
+
 let saveHighScore score =
     File.WriteAllText (highScoreFile, string score)
+
+let saveCheckpoint level = 
+    File.WriteAllText (checkpointFile, string level)
 
 let advanceGame (runState : RunState) =
     let elapsed = runState.elapsed
@@ -70,7 +82,8 @@ let advanceGame (runState : RunState) =
         let highScore = loadHighScore ()
         Title highScore |> Some
     | Some (Title _) when runState.WasJustPressed Keys.Enter ->
-        Loading (elapsed, 1, maxLevel, 0) |> Some
+        let checkpoint = loadCheckpoint ()
+        Loading (elapsed, checkpoint, maxLevel, 0) |> Some
     | Some (Loading (t, l, _, score)) when elapsed - t > timeToLoad ->
         getLevelModel levels.[l] l score runState.elapsed |> Some 
     | Some (Playing worldState) when hasReset runState worldState -> 
@@ -83,8 +96,10 @@ let advanceGame (runState : RunState) =
         let score = worldState.knight.score
         let highScore = loadHighScore ()
         if score > highScore then saveHighScore score |> ignore
+        saveCheckpoint (1)
         Some <| Victory (score, max score highScore)
     | Some (Playing worldState) when hasWarpedOut runState worldState ->
+        saveCheckpoint (worldState.level + 1)
         Loading (elapsed, worldState.level + 1, maxLevel, worldState.knight.score) |> Some
     | Some (Playing worldState) -> 
         { worldState with events = [] }
